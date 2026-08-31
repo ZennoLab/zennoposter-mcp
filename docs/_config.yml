@@ -1,0 +1,112 @@
+# Jekyll configuration for the published documentation site (GitHub Pages, ZennoLab/zennoposter-mcp,
+# Settings -> Pages -> Deploy from a branch -> main / docs). It is NOT used anywhere in this repo's
+# build: the publish-publicapi-docs-github CI job mirrors this directory into the published docs/
+# folder, and GitHub Pages builds the site from there.
+title: ZennoLab PublicApi
+description: External developer documentation for the ZennoPoster / ProjectMaker PublicApi and MCP servers
+url: https://zennolab.github.io
+baseurl: /zennoposter-mcp
+
+# Pinned to a tag, not to main: an upstream theme change must never be able to alter the published
+# site on its own schedule. jekyll-remote-theme is what makes a non-supported theme usable on Pages.
+remote_theme: just-the-docs/just-the-docs@v0.12.0
+
+# All three ship with GitHub Pages. jekyll-optional-front-matter is what lets the markdown files
+# stay plain markdown (no YAML front matter) — they have to remain readable as-is in GitLab and,
+# for api-reference.md, publishable to Confluence by `mark`, which is why every page attribute the
+# theme needs is set through `defaults` below instead of being written into the files.
+plugins:
+    - jekyll-remote-theme
+    - jekyll-optional-front-matter
+    - jekyll-relative-links
+
+# Rewrites the inter-document links (developer-guide.md -> developer-guide.html) so that the very
+# same relative links work in the source repo and on the site.
+relative_links:
+    enabled: true
+    collections: false
+
+search_enabled: true
+search:
+    heading_level: 3
+    previews: 3
+color_scheme: light
+heading_anchors: true
+
+aux_links:
+    OpenAPI explorer: https://zennolab.github.io/zennoposter-mcp/openapi/
+    GitHub: https://github.com/ZennoLab/zennoposter-mcp
+aux_links_new_tab: false
+
+footer_content: Generated from the frozen operation catalog of ZennoPoster. Questions and issues — github.com/ZennoLab/zennoposter-mcp/issues
+
+exclude:
+    - Gemfile
+    - Gemfile.lock
+    - vendor
+
+defaults:
+    - scope:
+          path: ''
+      values:
+          layout: default
+    - scope:
+          path: index.md
+      values:
+          title: Overview
+          nav_order: 1
+    - scope:
+          path: developer-guide.md
+      values:
+          title: Developer guide
+          nav_order: 2
+    - scope:
+          path: api-reference.md
+      values:
+          title: API reference
+          nav_order: 3
+    - scope:
+          path: errors.md
+      values:
+          title: Errors
+          nav_order: 4
+    - scope:
+          path: security-model.md
+      values:
+          title: Security model
+          nav_order: 5
+    - scope:
+          path: versioning-and-deprecation.md
+      values:
+          title: Versioning & deprecation
+          nav_order: 6
+    - scope:
+          path: ru/index.md
+      values:
+          title: Русский
+          nav_order: 7
+          has_children: true
+    - scope:
+          path: ru/developer-guide.md
+      values:
+          title: Руководство разработчика
+          parent: Русский
+          nav_order: 1
+    - scope:
+          path: ru/errors.md
+      values:
+          title: Обработка ошибок
+          parent: Русский
+          nav_order: 2
+    - scope:
+          path: ru/security-model.md
+      values:
+          title: Модель безопасности
+          parent: Русский
+          nav_order: 3
+    - scope:
+          path: ru/versioning-and-deprecation.md
+      values:
+          title: Версионирование и устаревание
+          parent: Русский
+          nav_order: 4

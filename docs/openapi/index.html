@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <title>ZennoLab PublicApi — OpenAPI v1</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { margin: 0; padding: 0; }
+      nav.docs-nav {
+        font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        background: #263238;
+        color: #eceff1;
+        padding: 10px 20px;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      nav.docs-nav a { color: #90caf9; text-decoration: none; }
+      nav.docs-nav a:hover { text-decoration: underline; }
+      nav.docs-nav span.label { color: #b0bec5; }
+    </style>
+  </head>
+  <body>
+    <!-- Links point at the rendered site (/openapi/ -> one level up, .html pages built by
+         Jekyll from the sibling markdown files); this page is the only file here that is
+         served as-is instead of being rendered, so it cannot use the .md links. -->
+    <nav class="docs-nav">
+      <span class="label">ZennoLab PublicApi docs:</span>
+      <a href="../">Docs home</a>
+      <a href="../developer-guide.html">Developer guide</a>
+      <a href="../versioning-and-deprecation.html">Versioning &amp; deprecation</a>
+      <a href="../errors.html">Errors</a>
+      <a href="../security-model.html">Security model</a>
+      <a href="../ru/">Русский</a>
+      <span class="label">(reference below is the OpenAPI spec)</span>
+    </nav>
+    <redoc spec-url="openapi.v1.json"></redoc>
+    <script src="https://cdn.redoc.ly/redoc/v2.5.3/bundles/redoc.standalone.js"
+            integrity="sha384-xiEssMQFSpSfLbzRZCGfxxIM5QDb2DTrU6vyoZdp2sV1L6pmOMy6MpTtUoLbpC96"
+            crossorigin="anonymous"></script>
+  </body>
+</html>

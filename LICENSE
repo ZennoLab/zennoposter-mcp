@@ -1,0 +1,82 @@
+License
+
+Copyright (c) 2026 ZennoLab. All rights reserved.
+
+A Russian translation of this license is provided for convenience in
+LICENSE.ru.md; in case of any discrepancy, this English version governs.
+
+This repository contains three kinds of content, licensed differently.
+The section headings below define which terms apply to which files.
+
+--------------------------------------------------------------------------
+1. Documentation
+   (all Markdown (.md) and HTML (.html) files in this repository,
+   including the GitHub Pages site built from them)
+--------------------------------------------------------------------------
+
+The documentation is licensed under the Creative Commons Attribution 4.0
+International License (CC BY 4.0). You may copy, redistribute, and adapt
+it for any purpose, including commercially, provided you give appropriate
+credit to ZennoLab and indicate if changes were made.
+
+Full license text: https://creativecommons.org/licenses/by/4.0/
+
+--------------------------------------------------------------------------
+2. API specification
+   (openapi.v1.json and any other OpenAPI/JSON schema files)
+--------------------------------------------------------------------------
+
+The API specification files are licensed under the MIT License:
+
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of these specification files, to deal in them without restriction,
+  including without limitation the rights to use, copy, modify, merge,
+  publish, distribute, sublicense, and/or sell copies, and to permit
+  persons to whom they are furnished to do so, subject to the following
+  condition: the above copyright notice and this permission notice shall
+  be included in all copies or substantial portions of the files.
+
+Code that you generate from the specification (client SDKs, type
+definitions, stubs) is yours; ZennoLab claims no rights in it.
+
+--------------------------------------------------------------------------
+3. MCP server binaries
+   (the compiled MCP server archives and executables published on the
+   Releases page of this repository)
+--------------------------------------------------------------------------
+
+The MCP server binaries are proprietary software of ZennoLab and are NOT
+covered by the licenses above.
+
+Permitted: downloading the unmodified release archives and using them
+together with a validly licensed copy of ZennoPoster / ZennoDroid, in
+accordance with the ZennoLab License Agreement
+(https://zennolab.com/en/terms-of-service/, Russian version:
+https://zennolab.com/ru/terms-of-service/).
+Redistribution of the release archives in unmodified form, with this
+notice preserved, is permitted.
+
+Not permitted without prior written permission from ZennoLab: modifying,
+adapting, translating, or creating derivative works of the binaries;
+reverse engineering, decompiling, or disassembling them except to the
+extent such restriction is prohibited by applicable law; distributing
+modified versions; or using the binaries to provide a competing product
+or service.
+
+--------------------------------------------------------------------------
+Trademarks
+--------------------------------------------------------------------------
+
+"ZennoLab", "ZennoPoster", and "ZennoDroid" are trademarks of ZennoLab.
+Nothing in this repository grants any right to use these trademarks
+except for descriptive references to the products.
+
+--------------------------------------------------------------------------
+Disclaimer
+--------------------------------------------------------------------------
+
+ALL CONTENT IN THIS REPOSITORY AND ITS RELEASES IS PROVIDED "AS IS",
+WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL ZENNOLAB BE LIABLE FOR
+ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM ITS USE.
