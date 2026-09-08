@@ -15,15 +15,21 @@ PublicApi documentation (the OpenAPI contract rendered with Redoc, the integrato
 error codes, versioning policy) lives at **https://zennolab.github.io/zennoposter-mcp/**
 (the pages are published from the `docs/` folder of this repository).
 
+These servers talk to **ZennoPoster 7.9.2 and newer** and to **ZennoDroid 2.6.1 and newer**.
+`MCP.Instance` applies to ZennoPoster only and `MCP.Android` to ZennoDroid only; `MCP.ProjectMaker`
+and `MCP.ZennoPoster` apply to both.
+Which server version goes with which product and contract version:
+**https://zennolab.github.io/zennoposter-mcp/compatibility.html**.
+
 ## The model: your own MCP instance with your own key
 
-The product **itself** starts internal MCP sidecars for its built-in AI chat — they live on
-the internal port band **6107–6113** (`ProductPorts.cs`; on ZennoDroid everything is shifted
-by `+10`), receive a least-privilege service key from the host via stdin, and **ignore** the
-`Authorization` header of incoming requests. This is internal infrastructure: connecting to
+The product **itself** starts internal MCP servers for its built-in AI chat — they live on
+the internal port band **6107–6113** (on ZennoDroid everything is shifted by `+10`), receive a
+least-privilege service key from the host, and **ignore** the `Authorization` header of
+incoming requests. This is internal infrastructure: connecting to
 it from outside is not supported (permissions there are defined by the service key, not
 yours), and **its ports must not be occupied** — a foreign process on a port from this band
-prevents the built-in sidecar from starting (the product logs an error, but its AI stack is
+prevents the built-in server from starting (the product logs an error, but its AI stack is
 left without that server).
 
 For your own LLM client you run a **separate copy** of the MCP server from the public
@@ -41,6 +47,16 @@ Default ports (set in the `appsettings.json` next to the exe):
 | `MCP.Instance` (Target=zennoposter) | **6209** (convention, set explicitly) | ZP PublicApi `:5300` | `Instance:ApiKey` |
 | `MCP.ZennoPoster` | **6210** | ZP PublicApi `:5300` | `ZennoPosterApi:ApiKey` |
 | `MCP.Android` (ZennoDroid) | **6211** | ZDroid PublicApi `:5309` | `Android:ApiKey` |
+
+The product API those servers call listens on different ports in the two products:
+
+| Application | ZennoPoster | ZennoDroid |
+|---|---|---|
+| ProjectMaker | 5299 | 5309 |
+| ZennoPoster | 5300 | 5310 |
+
+The defaults above and the examples below use the ZennoPoster ports; on ZennoDroid set each server's
+`BaseUrl` to the ZennoDroid column, as shown in "Changing ports".
 
 Everything can be overridden through standard ASP.NET Core configuration: the
 `appsettings.json` next to the exe, environment variables (`ASPNETCORE_URLS`,
@@ -88,6 +104,9 @@ variables / arguments:
 
 # ZennoPoster (runner tasks/sessions): 6210 -> :5300
 .\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPosterApi:ApiKey=zp_xxx
+
+# Android (ZennoDroid device): 6211 -> :5309
+.\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
 ```
 
 **Important note on the two `MCP.Instance` copies**: for the Instance server, `Target`
@@ -128,6 +147,9 @@ equivalent for your MCP client if needed):
 }
 ```
 
+On ZennoDroid the entries are `projectmaker`, `zennoposter` and `android` (port 6211); there is no
+`instance-*` mount there.
+
 No authorization is needed on this leg: the MCP servers listen on loopback only, and the
 permissions are defined by the key the server itself was started with (step 3).
 
@@ -138,3 +160,37 @@ With any MCP client (or plain HTTP) call a safe read-only method and make sure i
 If the key is invalid or lacks a scope/tier, the server returns a structured error
 (`401 unauthorized` / `403 forbidden` with `required`/`current` fields), not a silent
 failure.
+
+## Changing ports
+
+Each server has two ports: the one it listens on for your LLM client, and the product API port it
+calls.
+
+**Listen port.** Any of the three, arguments winning over environment, environment over the file:
+
+```powershell
+.\ZennoLab.AI.MCP.ProjectMaker.exe --urls http://localhost:7207
+
+$env:ASPNETCORE_URLS = "http://localhost:7207"
+.\ZennoLab.AI.MCP.ProjectMaker.exe
+```
+
+or `"Urls": "http://localhost:7207"` in the `appsettings.json` next to the exe. After moving a
+listen port, update the matching URL in the client configuration from step 4.
+
+Stay off **6107–6113**: those belong to the product's built-in servers, and a foreign process on one
+of them prevents the built-in server from starting.
+
+**Product API port.** Set the `BaseUrl` of that server's own section — this is what you change on
+ZennoDroid:
+
+```powershell
+# ProjectMaker API on 5309 instead of 5299
+.\ZennoLab.AI.MCP.ProjectMaker.exe --NeuroBot:BaseUrl=http://localhost:5309/api/v1 --NeuroBot:ApiKey=zp_xxx
+
+# ZennoPoster API on 5310 instead of 5300
+.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPosterApi:BaseUrl=http://localhost:5310/api/v1 --ZennoPosterApi:ApiKey=zp_xxx
+```
+
+The section name differs per server: `NeuroBot` for `MCP.ProjectMaker`, `Instance` for
+`MCP.Instance`, `ZennoPosterApi` for `MCP.ZennoPoster`, `Android` for `MCP.Android`.

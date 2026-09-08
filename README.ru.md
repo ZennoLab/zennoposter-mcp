@@ -15,14 +15,19 @@ MCP-серверы публикуются как self-contained `win-x64` бин
 версий) — **https://zennolab.github.io/zennoposter-mcp/**
 (страницы публикуются из папки `docs/` этого репозитория).
 
+Эти серверы работают с **ZennoPoster 7.9.2 и новее** и с **ZennoDroid 2.6.1 и новее**.
+`MCP.Instance` применяется только к ZennoPoster, а `MCP.Android` — только к ZennoDroid;
+`MCP.ProjectMaker` и `MCP.ZennoPoster` применяются к обоим.
+Какая версия сервера сочетается с какой версией продукта и контракта:
+**https://zennolab.github.io/zennoposter-mcp/ru/compatibility.html**.
+
 ## Модель: свой экземпляр MCP со своим ключом
 
-Продукт **сам** поднимает внутренние MCP-сайдкары для своего AI-чата — они живут на
-внутреннем бэнде портов **6107–6113** (`ProductPorts.cs`; на ZennoDroid всё сдвинуто `+10`),
-получают от хоста служебный least-privilege ключ через stdin и **игнорируют** `Authorization`
-входящих запросов. Это внутренняя инфраструктура: внешнее подключение к ней не предполагается
+Продукт **сам** поднимает внутренние MCP-серверы для своего AI-чата — они живут на
+внутреннем бэнде портов **6107–6113** (на ZennoDroid всё сдвинуто `+10`), получают от хоста
+служебный least-privilege ключ и **игнорируют** `Authorization` входящих запросов. Это внутренняя инфраструктура: внешнее подключение к ней не предполагается
 (права там определяются служебным ключом, а не вашим), а **занимать её порты нельзя** — чужой
-процесс на порту из этого бэнда не даст стартовать встроенному сайдкару (продукт напишет об
+процесс на порту из этого бэнда не даст стартовать встроенному серверу (продукт напишет об
 этом ошибку в лог, но AI-стек останется без этого сервера).
 
 Для своего LLM-клиента вы запускаете **отдельную копию** MCP-сервера из публичного пакета:
@@ -39,6 +44,16 @@ MCP-серверы публикуются как self-contained `win-x64` бин
 | `MCP.Instance` (Target=zennoposter) | **6209** (конвенция, задать явно) | ZP PublicApi `:5300` | `Instance:ApiKey` |
 | `MCP.ZennoPoster` | **6210** | ZP PublicApi `:5300` | `ZennoPosterApi:ApiKey` |
 | `MCP.Android` (ZennoDroid) | **6211** | ZDroid PublicApi `:5309` | `Android:ApiKey` |
+
+API продукта, в который ходят эти серверы, слушает в двух продуктах на разных портах:
+
+| Приложение | ZennoPoster | ZennoDroid |
+|---|---|---|
+| ProjectMaker | 5299 | 5309 |
+| ZennoPoster | 5300 | 5310 |
+
+Значения по умолчанию выше и примеры ниже — для ZennoPoster; на ZennoDroid задайте каждому серверу
+`BaseUrl` из столбца ZennoDroid, как показано в разделе «Изменить порты».
 
 Всё переопределяется штатной конфигурацией ASP.NET Core: `appsettings.json` рядом с exe,
 переменные окружения (`ASPNETCORE_URLS`, `NeuroBot__ApiKey`, …) или аргументы командной
@@ -84,6 +99,9 @@ MCP-серверы публикуются как self-contained `win-x64` бин
 
 # ZennoPoster (задачи/сессии раннера): 6210 -> :5300
 .\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPosterApi:ApiKey=zp_xxx
+
+# Android (устройство ZennoDroid): 6211 -> :5309
+.\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
 ```
 
 **Важно про два экземпляра `MCP.Instance`**: у сервера Instance `Target` (какие инструкции
@@ -123,6 +141,9 @@ HTTP-запросы) — задаются только вместе, как па
 }
 ```
 
+На ZennoDroid записи будут `projectmaker`, `zennoposter` и `android` (порт 6211); монтирования
+`instance-*` там нет.
+
 Авторизация на этом плече не нужна: MCP-серверы слушают только loopback, а права
 определяются ключом, с которым запущен сам сервер (шаг 3).
 
@@ -132,3 +153,38 @@ HTTP-запросы) — задаются только вместе, как па
 отвечает `200 OK` с ожидаемыми данными, например `get_product_version`/`ping` на нужном сервере.
 Если ключ невалиден или не хватает scope/tier — сервер вернёт структурированную ошибку
 (`401 unauthorized` / `403 forbidden` с полями `required`/`current`), а не молчаливый сбой.
+
+## Изменить порты
+
+У каждого сервера два порта: тот, на котором он слушает ваш LLM-клиент, и порт API продукта, в
+который он ходит.
+
+**Порт прослушивания.** Любым из трёх способов, аргументы сильнее окружения, окружение сильнее
+файла:
+
+```powershell
+.\ZennoLab.AI.MCP.ProjectMaker.exe --urls http://localhost:7207
+
+$env:ASPNETCORE_URLS = "http://localhost:7207"
+.\ZennoLab.AI.MCP.ProjectMaker.exe
+```
+
+или `"Urls": "http://localhost:7207"` в `appsettings.json` рядом с exe. После смены порта поправьте
+соответствующий URL в конфигурации клиента из шага 4.
+
+Не занимайте **6107–6113**: это порты встроенных серверов продукта, чужой процесс на любом из них
+не даст встроенному серверу стартовать.
+
+**Порт API продукта.** Задаётся в `BaseUrl` секции этого сервера — именно это меняется на
+ZennoDroid:
+
+```powershell
+# API ProjectMaker на 5309 вместо 5299
+.\ZennoLab.AI.MCP.ProjectMaker.exe --NeuroBot:BaseUrl=http://localhost:5309/api/v1 --NeuroBot:ApiKey=zp_xxx
+
+# API ZennoPoster на 5310 вместо 5300
+.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPosterApi:BaseUrl=http://localhost:5310/api/v1 --ZennoPosterApi:ApiKey=zp_xxx
+```
+
+Имя секции у каждого сервера своё: `NeuroBot` у `MCP.ProjectMaker`, `Instance` у `MCP.Instance`,
+`ZennoPosterApi` у `MCP.ZennoPoster`, `Android` у `MCP.Android`.
