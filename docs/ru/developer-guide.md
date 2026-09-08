@@ -74,6 +74,8 @@ POST /projects/current/actions/{groupId}/{actionId}/execute
 
 Добавление действия, чей `type` — `OwnCode`, дополнительно требует `code:author` (T3) сверх `project:edit` — авторство нового исполняемого кода и запуск существующего проекта разграничены по скоупам: ключ с низкими привилегиями может запустить доверенный проект, но не может внедрить и выполнить новый код тем же ключом.
 
+Общий блок кода проекта относится к тому же классу. `GET /projects/current/shared-code` читает директивы using и общий код на уровне T0 со скоупом `code:read`, а `PUT` по тому же пути требует `code:author` (T3), потому что этот код компилируется в проект и выполняется вместе с ним. Список ссылок из GAC у блока отдельный: `GET /projects/current/gac-references` — это T0 `project:read`, а заменяющий его `PUT` — T1 `project:edit`, поскольку ссылка сама по себе ничего не исполняет.
+
 ### Задачи ZennoPoster (`task:*`) — хост = ZennoPoster Core
 
 ```
@@ -196,7 +198,8 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 ```json
 {
   "host": "zennoposter",
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "productVersion": "7.9.2.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,
   "operations": [
@@ -213,6 +216,8 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 }
 ```
 
-`host` показывает, с какой поверхностью вы общаетесь (`zennoposter` обслуживает операции ZennoPoster + Instance + сквозные; ProjectMaker обслуживает ProjectMaker + Instance + сквозные — два хоста не предоставляют одинаковый набор операций). `isAvailable` равно `true` только тогда, когда операция и подключена на этом хосте (`IsImplemented`), и разрешена для вашего ключа (скоуп + тир) — значение `false` может означать как «не ваша операция для вызова», так и «ещё не реализована на этом хосте»; сравните `requiredScope`/`tier` с собственными `currentScopes`/`currentMaxTier`, чтобы понять, что именно. Вызов `/capabilities` перед попыткой вызова — самый дешёвый способ избежать предсказуемых 403/501.
+`host` показывает, с какой поверхностью вы общаетесь (`zennoposter` обслуживает операции ZennoPoster + Instance + сквозные; ProjectMaker обслуживает ProjectMaker + Instance + сквозные — два хоста не предоставляют одинаковый набор операций). `isAvailable` равно `true` только тогда, когда операция и подключена на этом хосте, и разрешена для вашего ключа (скоуп + тир) — значение `false` может означать как «не ваша операция для вызова», так и «ещё не реализована на этом хосте»; сравните `requiredScope`/`tier` с собственными `currentScopes`/`currentMaxTier`, чтобы понять, что именно. Вызов `/capabilities` перед попыткой вызова — самый дешёвый способ избежать предсказуемых 403/501.
 
-<!-- translated-from: developer-guide.md 415de58ea72623c47cb95cb16371858273a434fb -->
+`version` — версия контракта, которую обслуживает хост, `productVersion` — сборка продукта за ним, так что один вызов говорит, с чем именно вы общаетесь; пустой `productVersion` означает, что хост его не сообщает. Сопоставление обоих с релизами MCP-серверов — в [compatibility.md](compatibility.md).
+
+<!-- translated-from: developer-guide.md 5790426c6969668b8838b593fc3ac40cd37f79ec -->

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "ZennoLab PublicApi",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Versioned, transport-neutral control plane for ProjectMaker and ZennoPoster."
   },
   "servers": [
@@ -109,21 +109,6 @@
         "x-risk-tier": 0,
         "x-implemented": true,
         "x-required-scope": "project:read",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "session": {
-                    "type": "string",
-                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK",
@@ -133,35 +118,7 @@
                   "type": "object",
                   "properties": {
                     "zennoPosterVersion": {
-                      "type": "object",
-                      "properties": {
-                        "major": {
-                          "type": "integer"
-                        },
-                        "minor": {
-                          "type": "integer"
-                        },
-                        "build": {
-                          "type": "integer"
-                        },
-                        "revision": {
-                          "type": "integer"
-                        },
-                        "majorRevision": {
-                          "type": "integer"
-                        },
-                        "minorRevision": {
-                          "type": "integer"
-                        }
-                      },
-                      "required": [
-                        "major",
-                        "minor",
-                        "build",
-                        "revision",
-                        "majorRevision",
-                        "minorRevision"
-                      ],
+                      "type": "string",
                       "description": "Version of the ZennoPoster/ProjectMaker product currently running."
                     },
                     "projectName": {
@@ -177,35 +134,7 @@
                       "description": "Stable unique id stored inside the project."
                     },
                     "projectMinVersion": {
-                      "type": "object",
-                      "properties": {
-                        "major": {
-                          "type": "integer"
-                        },
-                        "minor": {
-                          "type": "integer"
-                        },
-                        "build": {
-                          "type": "integer"
-                        },
-                        "revision": {
-                          "type": "integer"
-                        },
-                        "majorRevision": {
-                          "type": "integer"
-                        },
-                        "minorRevision": {
-                          "type": "integer"
-                        }
-                      },
-                      "required": [
-                        "major",
-                        "minor",
-                        "build",
-                        "revision",
-                        "majorRevision",
-                        "minorRevision"
-                      ],
+                      "type": "string",
                       "description": "The project\u0027s UpdateVersion \u2014 the product version that last wrote the .zp; treat it as the minimum product version expected to open the project."
                     },
                     "lastModified": {
@@ -257,6 +186,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -497,11 +429,11 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
-          "404": {
-            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
-          },
           "409": {
             "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
           "500": {
             "description": "Internal error"
@@ -571,11 +503,11 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
-          "404": {
-            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
-          },
           "409": {
             "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
           "500": {
             "description": "Internal error"
@@ -637,6 +569,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -691,6 +626,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "500": {
             "description": "Internal error"
@@ -1027,6 +965,35 @@
         "x-risk-tier": 0,
         "x-implemented": true,
         "x-required-scope": "project:read",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "Free-text search over action names, descriptions and tags.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Restrict the search to one action type (catalog category tag, e.g. WebBrowser).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of hits. Default 10.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1421,25 +1388,17 @@
         "x-risk-tier": 0,
         "x-implemented": true,
         "x-required-scope": "project:read",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "groupId": {
-                    "type": "string",
-                    "description": "Optional. When set, scope the returned nodes/edges to this single group \u2014 useful to keep the payload small on very large templates. Empty/null returns the whole graph."
-                  },
-                  "session": {
-                    "type": "string",
-                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
-                  }
-                }
-              }
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": false,
+            "description": "Scope the returned nodes/edges to this single group (case-insensitive id). Omitted = the whole graph.",
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1497,6 +1456,14 @@
                             "type": "boolean",
                             "description": "True when the cube is disabled (skipped at run time)."
                           },
+                          "breakpoint": {
+                            "type": "boolean",
+                            "description": "True when the debugger pauses before this cube."
+                          },
+                          "optional": {
+                            "type": "boolean",
+                            "description": "True when an error in this cube does not fail the project."
+                          },
                           "isStart": {
                             "type": "boolean",
                             "description": "True when this cube is the project entry point (the Start block points at it)."
@@ -1512,6 +1479,8 @@
                           "indexInGroup",
                           "isSwitch",
                           "disabled",
+                          "breakpoint",
+                          "optional",
                           "isStart",
                           "onErrorPath"
                         ]
@@ -1571,6 +1540,223 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/diagram": {
+      "get": {
+        "operationId": "diagram_image_get",
+        "summary": "PNG of the schema (mode=Full|Visible, maxWidth/maxHeight/scale)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "project:read",
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "description": "Which part of the schema to draw: Full (every cube, group and static block, scaled to fit; the default) or Visible (only what the schema window is showing right now, at its zoom).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxWidth",
+            "in": "query",
+            "required": false,
+            "description": "Largest image width in pixels; 0 or omitted = no width-specific limit. Values above 4000 are clamped. Cannot be combined with scale.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "maxHeight",
+            "in": "query",
+            "required": false,
+            "description": "Largest image height in pixels; 0 or omitted = no height-specific limit. Values above 4000 are clamped. Cannot be combined with scale.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "scale",
+            "in": "query",
+            "required": false,
+            "description": "Pixels per schema unit as a decimal with \u0027.\u0027 as the separator (1 = the schema window at 100% zoom); 0 or omitted = chosen automatically. Cannot be combined with maxWidth/maxHeight (400).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "imageBase64": {
+                      "type": "string",
+                      "description": "The PNG itself, base64-encoded (no data-URI prefix)."
+                    },
+                    "mimeType": {
+                      "type": "string",
+                      "description": "Media type of the encoded image. Always \u0022image/png\u0022."
+                    },
+                    "width": {
+                      "type": "integer",
+                      "description": "Image width in pixels."
+                    },
+                    "height": {
+                      "type": "integer",
+                      "description": "Image height in pixels."
+                    },
+                    "scale": {
+                      "type": "number",
+                      "description": "Pixels per schema unit actually used. To turn a pixel offset in the image back into schema coordinates, divide it by this and add the contentBounds x/y."
+                    },
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "Full",
+                        "Visible"
+                      ],
+                      "description": "Which mode produced this image."
+                    },
+                    "contentBounds": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number",
+                          "description": "Left edge. Can be negative, since groups may sit left of the origin."
+                        },
+                        "y": {
+                          "type": "number",
+                          "description": "Top edge. Can be negative."
+                        },
+                        "width": {
+                          "type": "number",
+                          "description": "Width in schema units."
+                        },
+                        "height": {
+                          "type": "number",
+                          "description": "Height in schema units."
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "description": "The region of the schema that ended up in the frame, in schema coordinates."
+                    },
+                    "viewportBounds": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number",
+                          "description": "Left edge. Can be negative, since groups may sit left of the origin."
+                        },
+                        "y": {
+                          "type": "number",
+                          "description": "Top edge. Can be negative."
+                        },
+                        "width": {
+                          "type": "number",
+                          "description": "Width in schema units."
+                        },
+                        "height": {
+                          "type": "number",
+                          "description": "Height in schema units."
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "description": "What the schema window is showing right now, in schema coordinates. In Visible mode this is the same region as contentBounds; in Full mode it says which slice of the whole picture the user is looking at. Null when there is no schema window to read it from."
+                    },
+                    "isTruncated": {
+                      "type": "boolean",
+                      "description": "True when the requested scale did not fit the 4000-pixel limit and part of the region was left out of the frame. Only an explicit scale can cause this; without one the image is scaled down to fit instead. contentBounds always describes what really made it into the frame."
+                    },
+                    "actionsInFrame": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "actionId": {
+                            "type": "string",
+                            "description": "Unique id of the cube within the project."
+                          },
+                          "groupId": {
+                            "type": "string",
+                            "description": "Id of the group the cube belongs to."
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Cube type = its category tag (e.g. \u0022WebBrowser\u0022, \u0022Logic\u0022, \u0022OwnCode\u0022)."
+                          },
+                          "action": {
+                            "type": "string",
+                            "description": "The action verb, e.g. \u0022CMD_NAVIGATE\u0022, \u0022Switch\u0022."
+                          },
+                          "label": {
+                            "type": "string",
+                            "description": "The caption the cube shows on the schema: the name the user gave it, or the action\u0027s own display name when it has not been renamed."
+                          },
+                          "groupLabel": {
+                            "type": "string",
+                            "description": "Name of the owning group; empty when the group is unnamed."
+                          }
+                        }
+                      },
+                      "description": "The cubes inside the frame, in reading order (top row first, left to right within a row). This is what answers \u0022which cubes am I looking at\u0022: a cube carries no coordinates of its own, only its group\u0027s, so the graph alone cannot tell you which ones fell inside the frame."
+                    },
+                    "note": {
+                      "type": "string",
+                      "description": "Set only when the request was adjusted (scale clamped, region cropped); otherwise null."
+                    }
+                  },
+                  "required": [
+                    "width",
+                    "height",
+                    "scale",
+                    "mode",
+                    "isTruncated"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -1640,6 +1826,10 @@
                       "type": "string",
                       "description": "Id of the group the action belongs to."
                     },
+                    "name": {
+                      "type": "string",
+                      "description": "The action\u0027s display name, as shown on the schema and in the properties panel, and written by RenameAction. Empty when it was never named, in which case the editor draws an auto-caption derived from the action\u0027s type. This is the stored value, so it round-trips exactly what RenameAction wrote. The project graph reports the displayed name instead, which on a project converted from V3 falls back to the legacy comment field, so the graph can carry a label while this stays empty."
+                    },
                     "type": {
                       "type": "string",
                       "description": "Action type (catalog category tag, e.g. \u0022WebBrowser\u0022) \u2014 ready to pass to UpdateAction."
@@ -1649,32 +1839,16 @@
                       "description": "Action tag within the type (e.g. \u0022CMD_STARTINSTANCE\u0022) \u2014 ready to pass to UpdateAction."
                     },
                     "parameters": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "key": {
-                            "type": "string"
-                          },
-                          "value": {
-                            "type": "string"
-                          }
-                        }
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
                       },
                       "description": "Current parameter values, keyed by the schema parameter name. Only parameters declared in the catalog variant are included; absent values are returned as empty strings so the caller sees the full schema-defined surface."
                     },
                     "results": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "key": {
-                            "type": "string"
-                          },
-                          "value": {
-                            "type": "string"
-                          }
-                        }
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
                       },
                       "description": "Current result-binding values (e.g. OutputVariable \u2192 variable macro)."
                     },
@@ -1683,16 +1857,8 @@
                       "description": "For actions that use a structured element finder (HtmlElement and similar): short name of the active finder \u2014 e.g. XPathFinder, DomFinder, IntelliSearch, ImageFinder, RawCoordinatesFinder. null for actions that do not use finders."
                     },
                     "finder": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "key": {
-                            "type": "string"
-                          },
-                          "value": {}
-                        }
-                      },
+                      "type": "object",
+                      "additionalProperties": {},
                       "description": "Generic field map of the active finder\u0027s sub-elements. Plain leaf elements become strings; repeated children with the same tag become arrays (e.g. DomFinder\u0027s SearchCondition list). null when the action has no finder."
                     },
                     "links": {
@@ -1726,8 +1892,29 @@
                         ]
                       },
                       "description": "Outgoing branches of the action: OnSuccess and OnError. Each entry\u0027s IsImplicit is true when the target is computed from the next-action-in-group rule rather than stored explicitly. null targetActionId means the action is the terminal step on that branch (no successor at all)."
+                    },
+                    "disabled": {
+                      "type": "boolean",
+                      "description": "True when the cube is skipped at run time."
+                    },
+                    "breakpoint": {
+                      "type": "boolean",
+                      "description": "True when the debugger pauses before this cube."
+                    },
+                    "optional": {
+                      "type": "boolean",
+                      "description": "True when an error in this cube does not fail the project."
+                    },
+                    "comment": {
+                      "type": "string",
+                      "description": "The cube\u0027s caption on the schema, empty when it has none. This is the user\u0027s own text, not the model\u0027s internal Comment attribute."
                     }
-                  }
+                  },
+                  "required": [
+                    "disabled",
+                    "breakpoint",
+                    "optional"
+                  ]
                 }
               }
             }
@@ -1740,6 +1927,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -1791,32 +1981,16 @@
                     "description": "Action tag within the type \u2014 pass the value returned by GetActionDetails to keep the current action."
                   },
                   "parameters": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "key": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "string"
-                        }
-                      }
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
                     },
                     "description": "Parameter values keyed by the schema parameter name of the selected variant (see GetActionSchema). Validated against the catalog schema."
                   },
                   "results": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "key": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "string"
-                        }
-                      }
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
                     },
                     "description": "Result bindings keyed by the schema result name (e.g. OutputVariable). The value is the project variable name to store the result into; missing variables are created."
                   },
@@ -1828,44 +2002,20 @@
                         "description": "Selects which binding the payload describes \u2014 the DiscriminatorValue of the target binding (e.g. \u0022XPathFinder\u0022, \u0022DomFinder\u0022). Must mirror the value of the category\u0027s binding-discriminator parameter (typically FinderType) passed in the action parameters."
                       },
                       "scalars": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "key": {
-                              "type": "string"
-                            },
-                            "value": {
-                              "type": "string"
-                            }
-                          }
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
                         },
                         "description": "Scalar binding fields keyed by field name (see the binding\u0027s Fields in the catalog), e.g. XPath for XPathFinder."
                       },
                       "nestedArrays": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "key": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": {
                               "type": "string"
-                            },
-                            "value": {
-                              "type": "array",
-                              "items": {
-                                "type": "array",
-                                "items": {
-                                  "type": "object",
-                                  "properties": {
-                                    "key": {
-                                      "type": "string"
-                                    },
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              }
                             }
                           }
                         },
@@ -1936,6 +2086,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -2008,6 +2161,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -2042,32 +2198,16 @@
                     "description": "Action tag within the type (e.g. \u0022CMD_STARTINSTANCE\u0022, \u0022ToUpper\u0022). Together with Type it uniquely addresses one catalog variant."
                   },
                   "parameters": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "key": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "string"
-                        }
-                      }
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
                     },
                     "description": "Parameter values keyed by the schema parameter name of the selected variant (see GetActionSchema). Validated against the catalog schema; missing required parameters are rejected with validation errors."
                   },
                   "results": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "key": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "string"
-                        }
-                      }
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
                     },
                     "description": "Result bindings keyed by the schema result name (e.g. OutputVariable). The value is the project variable name to store the result into; variables that do not exist yet are created."
                   },
@@ -2079,44 +2219,20 @@
                         "description": "Selects which binding the payload describes \u2014 the DiscriminatorValue of the target binding (e.g. \u0022XPathFinder\u0022, \u0022DomFinder\u0022). Must mirror the value of the category\u0027s binding-discriminator parameter (typically FinderType) passed in the action parameters."
                       },
                       "scalars": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "key": {
-                              "type": "string"
-                            },
-                            "value": {
-                              "type": "string"
-                            }
-                          }
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
                         },
                         "description": "Scalar binding fields keyed by field name (see the binding\u0027s Fields in the catalog), e.g. XPath for XPathFinder."
                       },
                       "nestedArrays": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "key": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": {
                               "type": "string"
-                            },
-                            "value": {
-                              "type": "array",
-                              "items": {
-                                "type": "array",
-                                "items": {
-                                  "type": "object",
-                                  "properties": {
-                                    "key": {
-                                      "type": "string"
-                                    },
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              }
                             }
                           }
                         },
@@ -2124,6 +2240,22 @@
                       }
                     },
                     "description": "Optional structured-binding payload (e.g. ElementFinder / XPathFinder). When non-null, the engine applies it to action.Parameters after writing flat parameters and before binding-validation."
+                  },
+                  "groupId": {
+                    "type": "string",
+                    "description": "Put the cube in this existing group instead of letting the cursor decide. Combined with AfterActionId it picks the slot; on its own the cube goes last in the group."
+                  },
+                  "afterActionId": {
+                    "type": "string",
+                    "description": "Put the cube straight after this one, inside its group. Implies the group, so GroupId can be left out."
+                  },
+                  "x": {
+                    "type": "integer",
+                    "description": "Left edge for the new group the cube starts. Pass both coordinates or neither, and not together with GroupId or AfterActionId, which place the cube in a group that already exists. Either mistake is rejected rather than half applied."
+                  },
+                  "y": {
+                    "type": "integer",
+                    "description": "Top edge for the new group the cube goes into."
                   },
                   "succesLink": {
                     "type": "string",
@@ -2189,6 +2321,33 @@
                         }
                       },
                       "description": "Per-parameter validation failures when the input was rejected (ResultCode RESULT_INVALID_PARAMS); null on success."
+                    },
+                    "layoutConflicts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "groupId": {
+                            "type": "string",
+                            "description": "The group that could not be placed."
+                          },
+                          "conflictingGroupIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "The groups already occupying that space."
+                          },
+                          "conflictingStaticBlocks": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Static blocks in the way, by display name, such as Start. They have no group id, and the editor refuses a drag onto them just the same."
+                          }
+                        }
+                      },
+                      "description": "What was already at the requested \u0027x\u0027/\u0027y\u0027, when the add was refused because a new group would have overlapped it. This never appears in a 200: a refusal is a 409, and the host carries these into the error body\u0027s layoutConflicts."
                     }
                   }
                 }
@@ -2203,6 +2362,102 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The requested position overlaps another group; the response lists the conflicting groups (RESULT_FAILED_PRECONDITION)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/actions/{groupId}/{actionId}/name": {
+      "put": {
+        "operationId": "action_rename",
+        "summary": "Set an action\u0027s display name on the schema (empty string clears it)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "actionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The action\u0027s new display name, the same text the editor calls the cube\u0027s comment. Required; an empty string clears the name and the cube falls back to the auto-caption derived from its type. Free text, exactly as in the editor: no length limit, no character restrictions, and names need not be unique."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "actionId": {
+                      "type": "string",
+                      "description": "Id of the renamed action."
+                    },
+                    "groupId": {
+                      "type": "string",
+                      "description": "Id of the group the action belongs to."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The name the action now carries."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
           "500": {
             "description": "Internal error"
@@ -2303,6 +2558,90 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/groups/{groupId}/name": {
+      "put": {
+        "operationId": "group_rename",
+        "summary": "Set a group\u0027s caption above its frame (empty string clears it)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The group\u0027s new caption, drawn above its frame. Required; an empty string clears it and the frame loses its header. Free text with no length limit, no character restrictions and no uniqueness rule, exactly as in the editor. The frame grows to fit the caption, so the cubes inside shift down as it gets taller."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groupId": {
+                      "type": "string",
+                      "description": "Id of the renamed group."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The name the group now carries."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -2395,7 +2734,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -2423,6 +2763,653 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/actions/{groupId}/{actionId}/properties": {
+      "patch": {
+        "operationId": "action_properties_set",
+        "summary": "Set the cube\u0027s user flags: disabled/breakpoint/optional/comment (partial: a null field is left as it is)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "actionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "disabled": {
+                    "type": "boolean",
+                    "description": "Skip the cube at run time. A disabled cube always succeeds and the flow continues down its OnSuccess branch. Setting this to true raises the project\u0027s MinVersion to 7.2.1.0."
+                  },
+                  "breakpoint": {
+                    "type": "boolean",
+                    "description": "Pause the debugger before this cube runs."
+                  },
+                  "optional": {
+                    "type": "boolean",
+                    "description": "Do not fail the project when this cube errors."
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "The cube\u0027s caption on the schema. An empty string clears it, null leaves it alone."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "disabled": {
+                      "type": "boolean",
+                      "description": "True when the cube is skipped at run time."
+                    },
+                    "breakpoint": {
+                      "type": "boolean",
+                      "description": "True when the debugger pauses before this cube."
+                    },
+                    "optional": {
+                      "type": "boolean",
+                      "description": "True when an error in this cube does not fail the project."
+                    },
+                    "comment": {
+                      "type": "string",
+                      "description": "The cube\u0027s caption on the schema, empty when it has none."
+                    }
+                  },
+                  "required": [
+                    "disabled",
+                    "breakpoint",
+                    "optional"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/layout": {
+      "get": {
+        "operationId": "layout_get",
+        "summary": "Frame of every group on the schema (x/y/width/height)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "project:read",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groups": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "groupId": {
+                            "type": "string",
+                            "description": "Id of the group."
+                          },
+                          "label": {
+                            "type": "string",
+                            "description": "The group\u0027s caption, empty when it has none."
+                          },
+                          "x": {
+                            "type": "integer",
+                            "description": "Left edge of the frame."
+                          },
+                          "y": {
+                            "type": "integer",
+                            "description": "Top edge of the frame."
+                          },
+                          "width": {
+                            "type": "integer",
+                            "description": "Frame width, driven by the theme rather than by the content."
+                          },
+                          "height": {
+                            "type": "integer",
+                            "description": "Frame height, which grows with the number of cubes and the caption."
+                          },
+                          "actionCount": {
+                            "type": "integer",
+                            "description": "How many cubes the group holds."
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y",
+                          "width",
+                          "height",
+                          "actionCount"
+                        ]
+                      },
+                      "description": "Every group in the project, in project order."
+                    },
+                    "staticBlocks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Display name, which is what a refused move reports since these have no id."
+                          },
+                          "x": {
+                            "type": "integer",
+                            "description": "Left edge."
+                          },
+                          "y": {
+                            "type": "integer",
+                            "description": "Top edge."
+                          },
+                          "width": {
+                            "type": "integer",
+                            "description": "Width."
+                          },
+                          "height": {
+                            "type": "integer",
+                            "description": "Height."
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y",
+                          "width",
+                          "height"
+                        ]
+                      },
+                      "description": "The other things occupying space on the schema, such as Start and notes. They cannot be moved through the API, but a group cannot be placed over one, so they belong in any search for a free spot."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "layout_set",
+        "summary": "Move several groups at once (one redraw, one undo step)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groups": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "groupId": {
+                          "type": "string",
+                          "description": "Id of the group to move."
+                        },
+                        "x": {
+                          "type": "integer",
+                          "description": "New left edge of the frame."
+                        },
+                        "y": {
+                          "type": "integer",
+                          "description": "New top edge of the frame."
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y"
+                      ]
+                    },
+                    "description": "The groups to move. An empty or missing list is rejected."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applied": {
+                      "type": "integer",
+                      "description": "How many groups were moved."
+                    },
+                    "groups": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "groupId": {
+                            "type": "string",
+                            "description": "Id of the group."
+                          },
+                          "label": {
+                            "type": "string",
+                            "description": "The group\u0027s caption, empty when it has none."
+                          },
+                          "x": {
+                            "type": "integer",
+                            "description": "Left edge of the frame."
+                          },
+                          "y": {
+                            "type": "integer",
+                            "description": "Top edge of the frame."
+                          },
+                          "width": {
+                            "type": "integer",
+                            "description": "Frame width, driven by the theme rather than by the content."
+                          },
+                          "height": {
+                            "type": "integer",
+                            "description": "Frame height, which grows with the number of cubes and the caption."
+                          },
+                          "actionCount": {
+                            "type": "integer",
+                            "description": "How many cubes the group holds."
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y",
+                          "width",
+                          "height",
+                          "actionCount"
+                        ]
+                      },
+                      "description": "The frames of every group after the write, so a caller does not need a second read to see where things landed once the editor has had its say."
+                    },
+                    "layoutConflicts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "groupId": {
+                            "type": "string",
+                            "description": "The group that could not be placed."
+                          },
+                          "conflictingGroupIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "The groups already occupying that space."
+                          },
+                          "conflictingStaticBlocks": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Static blocks in the way, by display name, such as Start. They have no group id, and the editor refuses a drag onto them just the same."
+                          }
+                        }
+                      },
+                      "description": "The overlaps that made the batch refuse, one entry per group that could not be placed. This never appears in a 200: a refusal is a 409, and the host carries these into the error body\u0027s layoutConflicts."
+                    }
+                  },
+                  "required": [
+                    "applied"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The requested position overlaps another group; the response lists the conflicting groups (RESULT_FAILED_PRECONDITION)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/groups/{groupId}/position": {
+      "put": {
+        "operationId": "group_position_set",
+        "summary": "Move one group; its actions and lines follow",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "integer",
+                    "description": "New left edge of the frame."
+                  },
+                  "y": {
+                    "type": "integer",
+                    "description": "New top edge of the frame."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                },
+                "required": [
+                  "x",
+                  "y"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "integer",
+                      "description": "Left edge of the frame after the move."
+                    },
+                    "y": {
+                      "type": "integer",
+                      "description": "Top edge of the frame after the move."
+                    },
+                    "layoutConflicts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "groupId": {
+                            "type": "string",
+                            "description": "The group that could not be placed."
+                          },
+                          "conflictingGroupIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "The groups already occupying that space."
+                          },
+                          "conflictingStaticBlocks": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Static blocks in the way, by display name, such as Start. They have no group id, and the editor refuses a drag onto them just the same."
+                          }
+                        }
+                      },
+                      "description": "What blocked the move, when it was refused. This never appears in a 200: a refusal is a 409, and the host carries these into the error body\u0027s layoutConflicts."
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The requested position overlaps another group; the response lists the conflicting groups (RESULT_FAILED_PRECONDITION)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/groups/{groupId}/copy": {
+      "post": {
+        "operationId": "group_copy",
+        "summary": "Copy a group inside the open project, optionally at given coordinates",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "integer",
+                    "description": "Left edge for the copy. Leave both coordinates out to have the editor find a free spot beside the original."
+                  },
+                  "y": {
+                    "type": "integer",
+                    "description": "Top edge for the copy."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "newGroupId": {
+                      "type": "string",
+                      "description": "Id of the new group."
+                    },
+                    "actionIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Ids of the cubes in the copy, in group order."
+                    },
+                    "x": {
+                      "type": "integer",
+                      "description": "Left edge of the copy\u0027s frame."
+                    },
+                    "y": {
+                      "type": "integer",
+                      "description": "Top edge of the copy\u0027s frame."
+                    },
+                    "layoutConflicts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "groupId": {
+                            "type": "string",
+                            "description": "The group that could not be placed."
+                          },
+                          "conflictingGroupIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "The groups already occupying that space."
+                          },
+                          "conflictingStaticBlocks": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Static blocks in the way, by display name, such as Start. They have no group id, and the editor refuses a drag onto them just the same."
+                          }
+                        }
+                      },
+                      "description": "What blocked the copy, when it was refused and nothing was created. This never appears in a 200: a refusal is a 409, and the host carries these into the error body\u0027s layoutConflicts."
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The requested position overlaps another group; the response lists the conflicting groups (RESULT_FAILED_PRECONDITION)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -2472,6 +3459,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -2533,6 +3523,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -2628,6 +3621,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -2736,6 +3732,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "500": {
             "description": "Internal error"
           }
@@ -2786,6 +3785,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -2805,43 +3807,35 @@
         "x-risk-tier": 0,
         "x-implemented": true,
         "x-required-scope": "project:read",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "skipCount": {
-                    "type": "integer",
-                    "description": "Paging offset: number of matching log entries to skip (query parameter \u0022skip\u0022; default 0)."
-                  },
-                  "maxCount": {
-                    "type": "integer",
-                    "description": "Maximum number of entries to return (query parameter \u0022take\u0022; the server defaults to 100 when omitted or non-positive)."
-                  },
-                  "logLevel": {
-                    "type": "string",
-                    "enum": [
-                      "Info",
-                      "Warning",
-                      "Error"
-                    ],
-                    "description": "Severity filter \u2014 a flags combination of Info (1), Warning (2), Error (4). 0/omitted means all levels."
-                  },
-                  "session": {
-                    "type": "string",
-                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
-                  }
-                },
-                "required": [
-                  "skipCount",
-                  "maxCount",
-                  "logLevel"
-                ]
-              }
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "description": "Paging offset: number of matching log entries to skip. Default 0.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of entries to return. Default 100 when omitted or non-positive.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "logLevel",
+            "in": "query",
+            "required": false,
+            "description": "Severity filter: level names (Info, Warning, Error \u2014 comma-separated to combine) or their flag sum (Info=1, Warning=2, Error=4). Omitted = all levels.",
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -2902,6 +3896,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "500": {
             "description": "Internal error"
@@ -2980,6 +3977,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -3072,7 +4072,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -3100,6 +4101,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -3192,7 +4196,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -3220,6 +4225,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -3286,7 +4294,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -3314,6 +4323,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -3393,6 +4405,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -3459,6 +4474,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -3548,6 +4566,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -3655,7 +4676,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -3683,6 +4705,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -3790,7 +4815,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -3818,6 +4844,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -3884,7 +4913,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -3913,6 +4943,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -3939,6 +4972,24 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "description": "Paging offset: number of items to skip. Default 0.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of items to return. Default 100 when omitted or non-positive.",
+            "schema": {
+              "type": "integer"
             }
           }
         ],
@@ -4009,6 +5060,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -4078,6 +5132,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -4192,6 +5249,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -4324,7 +5384,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -4352,6 +5413,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -4484,7 +5548,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -4512,6 +5577,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -4578,7 +5646,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -4606,6 +5675,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -4694,6 +5766,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -4766,6 +5841,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -4792,6 +5870,24 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "description": "Paging offset: number of items to skip. Default 0.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of items to return. Default 100 when omitted or non-positive.",
+            "schema": {
+              "type": "integer"
             }
           }
         ],
@@ -4868,6 +5964,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
           },
@@ -4937,6 +6036,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -5035,6 +6137,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -5151,7 +6256,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -5179,6 +6285,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -5295,7 +6404,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -5323,6 +6433,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -5389,7 +6502,8 @@
                               "RESULT_INVALID_PARAMS",
                               "RESULT_UNSUPPORTED_FEATURE",
                               "RESULT_PERMISSION_DENIED",
-                              "RESULT_FAILED_PRECONDITION"
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
                             ],
                             "description": "Per-item result code; RESULT_OK when the item was processed successfully."
                           },
@@ -5417,6 +6531,579 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/input-settings": {
+      "get": {
+        "operationId": "project_input_settings_list",
+        "summary": "List input settings (values of a list type come back both raw and parsed)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "project:read",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "settings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Identifies the setting. Required. This is the stored name, which for a setting with an option list carries that list in braces (Country{RU|US}). On update and delete the stored name is matched first; if nothing matches, DisplayName is tried instead, so callers can address Country without repeating its options. An ambiguous display name (two settings share it) is rejected rather than guessed."
+                          },
+                          "newName": {
+                            "type": "string",
+                            "description": "New name when renaming on update. Null or empty means no rename. This replaces the visible part only and keeps whatever the braces hold, so renaming a drop-down does not drop its options. Pass a name that itself contains a brace to set the stored name verbatim, which is the escape hatch for the type-specific brace contents (Text{multiline} and FileName{\u2026}); that cannot be combined with Values."
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "description": "The setting\u0027s name as the user sees it: Name with any brace section removed. Read-only, populated on reads and ignored on writes."
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "The control the setting is rendered as, one of: Boolean, Select, Text, FileName, Number, Label, DropDown, Tab, Comment, DropDownMultiSelect, CaptchaModules, SmsServices, TranslateServices, Password. Matched without regard to case; an unrecognised value is rejected rather than silently replaced. Label, Tab and Comment are decoration rather than input, so they need no variable."
+                          },
+                          "defaultValue": {
+                            "type": "string",
+                            "description": "The value the field starts with. This is also the value the setting contributes when the project runs inside ProjectMaker, which never shows the form."
+                          },
+                          "help": {
+                            "type": "string",
+                            "description": "Hint text shown next to the field."
+                          },
+                          "variable": {
+                            "type": "string",
+                            "description": "Plain name of the project variable the entered value is written into (the project stores it as a macro; the conversion is done here). A variable that does not exist yet is created. Without one the setting is shown but the runtime discards whatever the user typed, so it is required for every type except Label, Tab and Comment. An empty string clears the binding. The pair of name and variable has to be unique, because that pair is what the runtime matches a submitted value against."
+                          },
+                          "values": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "string",
+                                  "description": "The value written into the setting\u0027s variable when the user picks this option. Required. Cannot contain {, }, | or :, which are the option list\u0027s own separators, and cannot contain \u0022, \u0022 because DropDownMultiSelect joins the picked values with it."
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "description": "What the user sees for this option, when it should read differently from Value. Null or empty means the value is shown as-is. Labels are all-or-nothing within one setting: either every option carries one or none does, because the project\u0027s encoding cannot express a mix. Same character restrictions as Value. Not supported for the Select type, which always shows the value itself."
+                                }
+                              }
+                            },
+                            "description": "The options offered by Select, DropDown and DropDownMultiSelect, replacing whatever the setting\u0027s braces held. An empty list removes the options. Null leaves them untouched, so a setting\u0027s help or default can be patched without restating its options. Rejected for the other types, whose braces mean something else entirely."
+                          }
+                        }
+                      },
+                      "description": "The project\u0027s input settings in the order the form shows them. Empty when the project has no input settings block at all."
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "Number of settings returned."
+                    },
+                    "settingsType": {
+                      "type": "string",
+                      "description": "Which parameter form the project actually uses at run time: InputSettings for these settings, BotUI when the project carries a BotUI block, which takes precedence and makes these settings dead weight, or None when it has neither. Writes are refused while this reads BotUI."
+                    }
+                  },
+                  "required": [
+                    "totalCount"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "project_input_settings_add",
+        "summary": "Add input settings (batch)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "settings": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Identifies the setting. Required. This is the stored name, which for a setting with an option list carries that list in braces (Country{RU|US}). On update and delete the stored name is matched first; if nothing matches, DisplayName is tried instead, so callers can address Country without repeating its options. An ambiguous display name (two settings share it) is rejected rather than guessed."
+                        },
+                        "newName": {
+                          "type": "string",
+                          "description": "New name when renaming on update. Null or empty means no rename. This replaces the visible part only and keeps whatever the braces hold, so renaming a drop-down does not drop its options. Pass a name that itself contains a brace to set the stored name verbatim, which is the escape hatch for the type-specific brace contents (Text{multiline} and FileName{\u2026}); that cannot be combined with Values."
+                        },
+                        "displayName": {
+                          "type": "string",
+                          "description": "The setting\u0027s name as the user sees it: Name with any brace section removed. Read-only, populated on reads and ignored on writes."
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "The control the setting is rendered as, one of: Boolean, Select, Text, FileName, Number, Label, DropDown, Tab, Comment, DropDownMultiSelect, CaptchaModules, SmsServices, TranslateServices, Password. Matched without regard to case; an unrecognised value is rejected rather than silently replaced. Label, Tab and Comment are decoration rather than input, so they need no variable."
+                        },
+                        "defaultValue": {
+                          "type": "string",
+                          "description": "The value the field starts with. This is also the value the setting contributes when the project runs inside ProjectMaker, which never shows the form."
+                        },
+                        "help": {
+                          "type": "string",
+                          "description": "Hint text shown next to the field."
+                        },
+                        "variable": {
+                          "type": "string",
+                          "description": "Plain name of the project variable the entered value is written into (the project stores it as a macro; the conversion is done here). A variable that does not exist yet is created. Without one the setting is shown but the runtime discards whatever the user typed, so it is required for every type except Label, Tab and Comment. An empty string clears the binding. The pair of name and variable has to be unique, because that pair is what the runtime matches a submitted value against."
+                        },
+                        "values": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "string",
+                                "description": "The value written into the setting\u0027s variable when the user picks this option. Required. Cannot contain {, }, | or :, which are the option list\u0027s own separators, and cannot contain \u0022, \u0022 because DropDownMultiSelect joins the picked values with it."
+                              },
+                              "label": {
+                                "type": "string",
+                                "description": "What the user sees for this option, when it should read differently from Value. Null or empty means the value is shown as-is. Labels are all-or-nothing within one setting: either every option carries one or none does, because the project\u0027s encoding cannot express a mix. Same character restrictions as Value. Not supported for the Select type, which always shows the value itself."
+                              }
+                            }
+                          },
+                          "description": "The options offered by Select, DropDown and DropDownMultiSelect, replacing whatever the setting\u0027s braces held. An empty list removes the options. Null leaves them untouched, so a setting\u0027s help or default can be patched without restating its options. Rejected for the other types, whose braces mean something else entirely."
+                        }
+                      }
+                    },
+                    "description": "Definitions of the settings to append to the form, in order. Each is processed independently and per-item outcomes are returned. The project\u0027s input settings block is created if it does not exist yet."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Identifier of the input item this outcome refers to (e.g. the list/table/variable name)."
+                          },
+                          "resultCode": {
+                            "type": "string",
+                            "enum": [
+                              "RESULT_OK",
+                              "RESULT_ERROR",
+                              "RESULT_NOT_FOUND",
+                              "RESULT_INVALID_PARAMS",
+                              "RESULT_UNSUPPORTED_FEATURE",
+                              "RESULT_PERMISSION_DENIED",
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
+                            ],
+                            "description": "Per-item result code; RESULT_OK when the item was processed successfully."
+                          },
+                          "error": {
+                            "type": "string",
+                            "description": "Per-item error message when the item failed; null on success."
+                          }
+                        },
+                        "required": [
+                          "resultCode"
+                        ]
+                      },
+                      "description": "Per-item outcomes, one per input definition; a failed item does not fail the rest of the batch. The item\u0027s name is the stored name the setting ended up with, braces included."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "project_input_settings_update",
+        "summary": "Update input settings (batch; rename via newName)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "settings": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Identifies the setting. Required. This is the stored name, which for a setting with an option list carries that list in braces (Country{RU|US}). On update and delete the stored name is matched first; if nothing matches, DisplayName is tried instead, so callers can address Country without repeating its options. An ambiguous display name (two settings share it) is rejected rather than guessed."
+                        },
+                        "newName": {
+                          "type": "string",
+                          "description": "New name when renaming on update. Null or empty means no rename. This replaces the visible part only and keeps whatever the braces hold, so renaming a drop-down does not drop its options. Pass a name that itself contains a brace to set the stored name verbatim, which is the escape hatch for the type-specific brace contents (Text{multiline} and FileName{\u2026}); that cannot be combined with Values."
+                        },
+                        "displayName": {
+                          "type": "string",
+                          "description": "The setting\u0027s name as the user sees it: Name with any brace section removed. Read-only, populated on reads and ignored on writes."
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "The control the setting is rendered as, one of: Boolean, Select, Text, FileName, Number, Label, DropDown, Tab, Comment, DropDownMultiSelect, CaptchaModules, SmsServices, TranslateServices, Password. Matched without regard to case; an unrecognised value is rejected rather than silently replaced. Label, Tab and Comment are decoration rather than input, so they need no variable."
+                        },
+                        "defaultValue": {
+                          "type": "string",
+                          "description": "The value the field starts with. This is also the value the setting contributes when the project runs inside ProjectMaker, which never shows the form."
+                        },
+                        "help": {
+                          "type": "string",
+                          "description": "Hint text shown next to the field."
+                        },
+                        "variable": {
+                          "type": "string",
+                          "description": "Plain name of the project variable the entered value is written into (the project stores it as a macro; the conversion is done here). A variable that does not exist yet is created. Without one the setting is shown but the runtime discards whatever the user typed, so it is required for every type except Label, Tab and Comment. An empty string clears the binding. The pair of name and variable has to be unique, because that pair is what the runtime matches a submitted value against."
+                        },
+                        "values": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "string",
+                                "description": "The value written into the setting\u0027s variable when the user picks this option. Required. Cannot contain {, }, | or :, which are the option list\u0027s own separators, and cannot contain \u0022, \u0022 because DropDownMultiSelect joins the picked values with it."
+                              },
+                              "label": {
+                                "type": "string",
+                                "description": "What the user sees for this option, when it should read differently from Value. Null or empty means the value is shown as-is. Labels are all-or-nothing within one setting: either every option carries one or none does, because the project\u0027s encoding cannot express a mix. Same character restrictions as Value. Not supported for the Select type, which always shows the value itself."
+                              }
+                            }
+                          },
+                          "description": "The options offered by Select, DropDown and DropDownMultiSelect, replacing whatever the setting\u0027s braces held. An empty list removes the options. Null leaves them untouched, so a setting\u0027s help or default can be patched without restating its options. Rejected for the other types, whose braces mean something else entirely."
+                        }
+                      }
+                    },
+                    "description": "Patches to apply, each identified by its name. Every other field is optional and null leaves that part of the setting alone. Each patch is processed independently and per-item outcomes are returned. Positions are not affected; use the reorder operation for that."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Identifier of the input item this outcome refers to (e.g. the list/table/variable name)."
+                          },
+                          "resultCode": {
+                            "type": "string",
+                            "enum": [
+                              "RESULT_OK",
+                              "RESULT_ERROR",
+                              "RESULT_NOT_FOUND",
+                              "RESULT_INVALID_PARAMS",
+                              "RESULT_UNSUPPORTED_FEATURE",
+                              "RESULT_PERMISSION_DENIED",
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
+                            ],
+                            "description": "Per-item result code; RESULT_OK when the item was processed successfully."
+                          },
+                          "error": {
+                            "type": "string",
+                            "description": "Per-item error message when the item failed; null on success."
+                          }
+                        },
+                        "required": [
+                          "resultCode"
+                        ]
+                      },
+                      "description": "Per-item outcomes, one per patch; a failed item does not fail the rest of the batch. The item\u0027s name is the stored name the setting ended up with, so a rename or a change of options is visible in the reply."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "project_input_settings_delete",
+        "summary": "Delete input settings by name",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "names": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Names of the settings to remove, either the stored name or the name as displayed. Each is processed independently and per-item outcomes are returned. Removing the last setting keeps the (now empty) block, matching what the editor does. The variables the settings were bound to are left in the project."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Identifier of the input item this outcome refers to (e.g. the list/table/variable name)."
+                          },
+                          "resultCode": {
+                            "type": "string",
+                            "enum": [
+                              "RESULT_OK",
+                              "RESULT_ERROR",
+                              "RESULT_NOT_FOUND",
+                              "RESULT_INVALID_PARAMS",
+                              "RESULT_UNSUPPORTED_FEATURE",
+                              "RESULT_PERMISSION_DENIED",
+                              "RESULT_FAILED_PRECONDITION",
+                              "RESULT_PROJECT_NOT_OPEN"
+                            ],
+                            "description": "Per-item result code; RESULT_OK when the item was processed successfully."
+                          },
+                          "error": {
+                            "type": "string",
+                            "description": "Per-item error message when the item failed; null on success."
+                          }
+                        },
+                        "required": [
+                          "resultCode"
+                        ]
+                      },
+                      "description": "Per-item outcomes, one per requested name; a failed item does not fail the rest of the batch."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "404": {
+            "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/input-settings/order": {
+      "put": {
+        "operationId": "project_input_settings_reorder",
+        "summary": "Reorder input settings by listing every name",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "names": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Every setting\u0027s name, in the order the form should show them. Either the stored names or the displayed ones. The list has to account for all of them exactly once: a list that skips or repeats a setting is refused outright rather than applied in part, because there is no sensible place to put the settings it left out. Reordering is all-or-nothing, so nothing moves unless the whole list checks out."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "names": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The stored names in the order they now sit in, so the caller can confirm the move without reading the list again."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
@@ -5465,6 +7152,9 @@
           },
           "403": {
             "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "500": {
             "description": "Internal error"
@@ -5519,6 +7209,9 @@
           "403": {
             "description": "Missing scope or tier exceeded"
           },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
           "500": {
             "description": "Internal error"
           }
@@ -5535,6 +7228,17 @@
         "x-risk-tier": 0,
         "x-implemented": true,
         "x-required-scope": "code:read",
+        "parameters": [
+          {
+            "name": "typeName",
+            "in": "query",
+            "required": false,
+            "description": "Fully-qualified or short name of one type to describe in full; omitted = the summary index of all types.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -5718,6 +7422,269 @@
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/shared-code": {
+      "get": {
+        "operationId": "shared_code_get",
+        "summary": "Using directives, common code, load-from-file mode and path",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "code:read",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usings": {
+                      "type": "string",
+                      "description": "The user\u0027s using directives, one per line. Does not include the default ones."
+                    },
+                    "commonCode": {
+                      "type": "string",
+                      "description": "The common code: members shared by every C# cube of the project."
+                    },
+                    "loadCodeFromFile": {
+                      "type": "boolean",
+                      "description": "True when the common code is loaded from LocalPath instead of the project."
+                    },
+                    "localPath": {
+                      "type": "string",
+                      "description": "Path to the .cs file the common code is loaded from. May contain project macros."
+                    }
+                  },
+                  "required": [
+                    "loadCodeFromFile"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "shared_code_set",
+        "summary": "Change the shared code (partial: a null field is left as it is)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 3,
+        "x-implemented": true,
+        "x-required-scope": "code:author",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usings": {
+                    "type": "string",
+                    "description": "Replaces the user\u0027s using directives, one per line."
+                  },
+                  "commonCode": {
+                    "type": "string",
+                    "description": "Replaces the common code."
+                  },
+                  "loadCodeFromFile": {
+                    "type": "boolean",
+                    "description": "Turns the \u0022load the common code from a file\u0022 mode on or off."
+                  },
+                  "localPath": {
+                    "type": "string",
+                    "description": "Replaces the path the common code is loaded from."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "blockCreated": {
+                      "type": "boolean",
+                      "description": "True when the project had no static code block and one was created for this change."
+                    }
+                  },
+                  "required": [
+                    "blockCreated"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/gac-references": {
+      "get": {
+        "operationId": "gac_references_get",
+        "summary": "The project\u0027s GAC assembly references",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "project:read",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "references": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "One entry per reference, in the form the compiler and the IntelliSense resolver receive it: either an assembly name (\u0022System.Drawing\u0022 or a full strong name) or an external DLL marked as \u0022[external]Name[external]\u0022."
+                    },
+                    "totalCount": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "totalCount"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      },
+      "put": {
+        "operationId": "gac_references_set",
+        "summary": "Replace the whole GAC reference list",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Assembly names, or \u0022[external]Name[external]\u0022 for a DLL from the external assemblies folder. Same form References returns."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "references": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The references the project holds after the replacement. Not always the list that was sent: blank entries are dropped and duplicates collapsed, so this is what actually got stored."
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "Number of references the project holds after the replacement."
+                    },
+                    "blockCreated": {
+                      "type": "boolean",
+                      "description": "True when the project had no \u0022GAC references\u0022 block and one was created."
+                    }
+                  },
+                  "required": [
+                    "totalCount",
+                    "blockCreated"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "500": {
             "description": "Internal error"
@@ -6280,7 +8247,7 @@
     "/api/v1/tasks/{id}/tries": {
       "get": {
         "operationId": "task_tries_get",
-        "summary": "Queued tries (NumberOfTries)",
+        "summary": "Queued tries (NumberOfTries); -1 means the task runs forever",
         "tags": [
           "ZennoPoster"
         ],
@@ -6307,7 +8274,7 @@
                   "properties": {
                     "tries": {
                       "type": "integer",
-                      "description": "The queued-tries counter, always \u003E= 0. On PUT this is the value actually applied, re-read after the commit."
+                      "description": "The queued-tries counter: \u003E= 0, or -1 when the task runs forever. On PUT this is the value actually applied, re-read after the commit."
                     }
                   },
                   "required": [
@@ -6336,7 +8303,7 @@
       },
       "put": {
         "operationId": "task_tries_set",
-        "summary": "Set tries \u2014 starts a ready task (gated like task_start when it would start)",
+        "summary": "Set tries, or -1 to run forever \u2014 starts a ready task (gated like task_start when it would start)",
         "tags": [
           "ZennoPoster"
         ],
@@ -6361,7 +8328,7 @@
                 "properties": {
                   "tries": {
                     "type": "integer",
-                    "description": "New value for the queued-tries counter. Must be \u003E= 0; rejected with 400 otherwise. Setting a positive value on a ready task starts it."
+                    "description": "New value for the queued-tries counter. Must be \u003E= 0, or -1 to make the task run forever; anything else is rejected with 400. A task on -1 keeps running until it is stopped, because the counter is never counted down. Setting a non-zero value on a ready task starts it."
                   }
                 },
                 "required": [
@@ -6381,7 +8348,7 @@
                   "properties": {
                     "tries": {
                       "type": "integer",
-                      "description": "The queued-tries counter, always \u003E= 0. On PUT this is the value actually applied, re-read after the commit."
+                      "description": "The queued-tries counter: \u003E= 0, or -1 when the task runs forever. On PUT this is the value actually applied, re-read after the commit."
                     }
                   },
                   "required": [
@@ -6412,7 +8379,7 @@
     "/api/v1/tasks/{id}/tries/add": {
       "post": {
         "operationId": "task_tries_add",
-        "summary": "Add tries \u2014 starts a ready task (gated like task_start when it would start)",
+        "summary": "Add tries, or -1 to run forever \u2014 starts a ready task (gated like task_start when it would start)",
         "tags": [
           "ZennoPoster"
         ],
@@ -6437,7 +8404,7 @@
                 "properties": {
                   "count": {
                     "type": "integer",
-                    "description": "Number of run tries to add to the task\u0027s queue. Must be \u003E= 1 (use PUT /tasks/{id}/tries to lower the queue); rejected with 400 otherwise. Adding tries to a ready task starts it."
+                    "description": "Number of run tries to add to the task\u0027s queue. Must be \u003E= 1, or -1 to make the task run forever; anything else is rejected with 400. Use PUT /tasks/{id}/tries to lower the queue. -1 does not add anything: it switches the task to endless execution, the same as the \u0022Perform infinitely\u0022 button in ZennoPoster. Adding tries to a ready task starts it."
                   }
                 },
                 "required": [
@@ -6457,11 +8424,11 @@
                   "properties": {
                     "totalTries": {
                       "type": "integer",
-                      "description": "The queued-tries counter after the add, re-read from the task (actually applied, not an echo)."
+                      "description": "The queued-tries counter after the add, re-read from the task (actually applied, not an echo). -1 means the task now runs forever."
                     },
                     "addedTries": {
                       "type": "integer",
-                      "description": "Number of tries this call added (echoes the request\u0027s count)."
+                      "description": "Number of tries this call added (echoes the request\u0027s count), or -1 when the call switched the task to running forever."
                     }
                   },
                   "required": [
@@ -6524,7 +8491,7 @@
                     },
                     "numberOfTries": {
                       "type": "integer",
-                      "description": "Number of tries to queue, 0 or more. A non-zero value on a ready task starts it \u2014 gated like task_start."
+                      "description": "Number of tries to queue: 0 or more, or -1 to run forever. A non-zero value on a ready task starts it \u2014 gated like task_start."
                     },
                     "priority": {
                       "type": "integer",
@@ -6615,7 +8582,7 @@
                   },
                   "numberOfTries": {
                     "type": "integer",
-                    "description": "Number of tries to queue, 0 or more. A non-zero value on a ready task starts it \u2014 gated like task_start."
+                    "description": "Number of tries to queue: 0 or more, or -1 to run forever. A non-zero value on a ready task starts it \u2014 gated like task_start."
                   },
                   "priority": {
                     "type": "integer",
@@ -9633,7 +11600,11 @@
                     },
                     "version": {
                       "type": "string",
-                      "description": "Contract semver (ContractVersion)."
+                      "description": "Semantic version of the contract this host serves."
+                    },
+                    "productVersion": {
+                      "type": "string",
+                      "description": "Version of the product serving this API, e.g. \u00227.9.2.0\u0022. Empty when the host does not report one \u2014 read that as unknown, not as old."
                     },
                     "currentScopes": {
                       "type": "array",
@@ -9685,20 +11656,12 @@
                           "isAvailable"
                         ]
                       },
-                      "description": "Every operation of the host\u0027s domains, one entry each \u2014 including operations the current key cannot invoke (see IsAvailable)."
+                      "description": "Every operation of the host\u0027s domains, one entry each \u2014 including operations the current key cannot invoke (their isAvailable is false)."
                     },
                     "tierLegend": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "key": {
-                            "type": "string"
-                          },
-                          "value": {
-                            "type": "string"
-                          }
-                        }
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
                       },
                       "description": "Static legend of the tier taxonomy for client display."
                     }

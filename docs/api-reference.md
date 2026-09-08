@@ -69,23 +69,17 @@ Product name and version.
 
 Info about the open project.
 
-**Request body:**
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
-
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `zennoPosterVersion` | object | no | Version of the ZennoPoster/ProjectMaker product currently running. |
+| `zennoPosterVersion` | string | no | Version of the ZennoPoster/ProjectMaker product currently running. |
 | `projectName` | string | no | Name of the currently open project (active tab). |
 | `projectPath` | string | no | Full path of the project's .zp file on disk; null when the project has not been saved yet. |
 | `projectId` | string | no | Stable unique id stored inside the project. |
-| `projectMinVersion` | object | no | The project's UpdateVersion — the product version that last wrote the .zp; treat it as the minimum product version expected to open the project. |
+| `projectMinVersion` | string | no | The project's UpdateVersion — the product version that last wrote the .zp; treat it as the minimum product version expected to open the project. |
 | `lastModified` | string | yes | Last modification time (UTC) of the project; default (zero) when unknown. |
 | `isZDroid` | boolean | yes | True when the host product is ZennoDroid (Android automation) rather than ZennoPoster. |
 | `isRealPhone` | boolean | yes | True on ZennoDroid Enterprise, which drives real phones instead of emulators. Always false outside ZennoDroid. |
@@ -156,7 +150,7 @@ Save the open project.
 | `path` | string | no | Optional target file path ("save as"). When null/empty the project is saved in place to its existing file. A path is REQUIRED the first time a freshly created project is saved (it has no file yet). |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `409` failed_precondition · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
 
 **Success body (200):**
 
@@ -182,7 +176,7 @@ Close the open project.
 | `discardUnsavedChanges` | boolean | yes | Close the project even when it has unsaved changes, discarding them. When false (the default) a changed project is not closed: the call fails with 409 failed_precondition so no work is lost silently — save first (project_save) or opt into discarding explicitly. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `409` failed_precondition · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
 
 **Success body (200):**
 
@@ -203,7 +197,7 @@ Run the open project — executes project code incl. OwnCode (RCE class).
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -223,7 +217,7 @@ Stop the running project.
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
 
 **Success body (200):**
 
@@ -248,6 +242,14 @@ Catalog of action types.
 `actions_catalog_search` · tier **T0** · scope `project:read`
 
 Search actions (query/category/maxResults).
+
+**Query parameters:**
+
+| Name | Type | Description |
+|---|---|---|
+| `query` | string | Free-text search over action names, descriptions and tags. |
+| `type` | string | Restrict the search to one action type (catalog category tag, e.g. WebBrowser). |
+| `maxResults` | integer | Maximum number of hits. Default 10. |
 
 **Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
 
@@ -290,14 +292,13 @@ Parameter/result schema of a variant.
 
 List actions (without parameters).
 
-**Request body:**
+**Query parameters:**
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `groupId` | string | no | Optional. When set, scope the returned nodes/edges to this single group — useful to keep the payload small on very large templates. Empty/null returns the whole graph. |
-| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+| Name | Type | Description |
+|---|---|---|
+| `groupId` | string | Scope the returned nodes/edges to this single group (case-insensitive id). Omitted = the whole graph. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -307,6 +308,39 @@ List actions (without parameters).
 | `links` | array of object | no | Graph edges — every outgoing branch of every cube. Each ActionLink is a source (ActionId/GroupId) → target (TargetActionId, a bare action id) hop on a branch (OnSuccess/OnError/Default/Case:N); IsImplicit marks the next-in-group OnSuccess fallback. |
 | `startActionId` | string | no | Entry cube the Start block points at, or null when unwired/empty project. |
 | `startGroupId` | string | no | Group of the entry cube, or null when unwired/empty project. |
+
+### `GET /projects/current/diagram`
+
+`diagram_image_get` · tier **T0** · scope `project:read`
+
+PNG of the schema (mode=Full|Visible, maxWidth/maxHeight/scale).
+
+**Query parameters:**
+
+| Name | Type | Description |
+|---|---|---|
+| `mode` | string | Which part of the schema to draw: Full (every cube, group and static block, scaled to fit; the default) or Visible (only what the schema window is showing right now, at its zoom). |
+| `maxWidth` | integer | Largest image width in pixels; 0 or omitted = no width-specific limit. Values above 4000 are clamped. Cannot be combined with scale. |
+| `maxHeight` | integer | Largest image height in pixels; 0 or omitted = no height-specific limit. Values above 4000 are clamped. Cannot be combined with scale. |
+| `scale` | string | Pixels per schema unit as a decimal with '.' as the separator (1 = the schema window at 100% zoom); 0 or omitted = chosen automatically. Cannot be combined with maxWidth/maxHeight (400). |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `imageBase64` | string | no | The PNG itself, base64-encoded (no data-URI prefix). |
+| `mimeType` | string | no | Media type of the encoded image. Always "image/png". |
+| `width` | integer | yes | Image width in pixels. |
+| `height` | integer | yes | Image height in pixels. |
+| `scale` | number | yes | Pixels per schema unit actually used. To turn a pixel offset in the image back into schema coordinates, divide it by this and add the contentBounds x/y. |
+| `mode` | enum(Full \| Visible) | yes | Which mode produced this image. |
+| `contentBounds` | object | no | The region of the schema that ended up in the frame, in schema coordinates. |
+| `viewportBounds` | object | no | What the schema window is showing right now, in schema coordinates. In Visible mode this is the same region as contentBounds; in Full mode it says which slice of the whole picture the user is looking at. Null when there is no schema window to read it from. |
+| `isTruncated` | boolean | yes | True when the requested scale did not fit the 4000-pixel limit and part of the region was left out of the frame. Only an explicit scale can cause this; without one the image is scaled down to fit instead. contentBounds always describes what really made it into the frame. |
+| `actionsInFrame` | array of object | no | The cubes inside the frame, in reading order (top row first, left to right within a row). This is what answers "which cubes am I looking at": a cube carries no coordinates of its own, only its group's, so the graph alone cannot tell you which ones fell inside the frame. |
+| `note` | string | no | Set only when the request was adjusted (scale clamped, region cropped); otherwise null. |
 
 ### `GET /projects/current/actions/{groupId}/{actionId}`
 
@@ -322,7 +356,7 @@ Action details (params/results/finder/links).
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -330,13 +364,18 @@ Action details (params/results/finder/links).
 |---|---|---|---|
 | `actionId` | string | no | Id of the inspected action. |
 | `groupId` | string | no | Id of the group the action belongs to. |
+| `name` | string | no | The action's display name, as shown on the schema and in the properties panel, and written by RenameAction. Empty when it was never named, in which case the editor draws an auto-caption derived from the action's type. This is the stored value, so it round-trips exactly what RenameAction wrote. The project graph reports the displayed name instead, which on a project converted from V3 falls back to the legacy comment field, so the graph can carry a label while this stays empty. |
 | `type` | string | no | Action type (catalog category tag, e.g. "WebBrowser") — ready to pass to UpdateAction. |
 | `action` | string | no | Action tag within the type (e.g. "CMD_STARTINSTANCE") — ready to pass to UpdateAction. |
-| `parameters` | array of object | no | Current parameter values, keyed by the schema parameter name. Only parameters declared in the catalog variant are included; absent values are returned as empty strings so the caller sees the full schema-defined surface. |
-| `results` | array of object | no | Current result-binding values (e.g. OutputVariable → variable macro). |
+| `parameters` | object | no | Current parameter values, keyed by the schema parameter name. Only parameters declared in the catalog variant are included; absent values are returned as empty strings so the caller sees the full schema-defined surface. |
+| `results` | object | no | Current result-binding values (e.g. OutputVariable → variable macro). |
 | `finderType` | string | no | For actions that use a structured element finder (HtmlElement and similar): short name of the active finder — e.g. XPathFinder, DomFinder, IntelliSearch, ImageFinder, RawCoordinatesFinder. null for actions that do not use finders. |
-| `finder` | array of object | no | Generic field map of the active finder's sub-elements. Plain leaf elements become strings; repeated children with the same tag become arrays (e.g. DomFinder's SearchCondition list). null when the action has no finder. |
+| `finder` | object | no | Generic field map of the active finder's sub-elements. Plain leaf elements become strings; repeated children with the same tag become arrays (e.g. DomFinder's SearchCondition list). null when the action has no finder. |
 | `links` | array of object | no | Outgoing branches of the action: OnSuccess and OnError. Each entry's IsImplicit is true when the target is computed from the next-action-in-group rule rather than stored explicitly. null targetActionId means the action is the terminal step on that branch (no successor at all). |
+| `disabled` | boolean | yes | True when the cube is skipped at run time. |
+| `breakpoint` | boolean | yes | True when the debugger pauses before this cube. |
+| `optional` | boolean | yes | True when an error in this cube does not fail the project. |
+| `comment` | string | no | The cube's caption on the schema, empty when it has none. This is the user's own text, not the model's internal Comment attribute. |
 
 ### `POST /projects/current/actions`
 
@@ -350,14 +389,18 @@ Add an action (OwnCode/CSharp category requires code:author, T3).
 |---|---|---|---|
 | `type` | string | no | Action type (catalog category tag, e.g. "WebBrowser", "TextProcessing"). Discover values via the actions catalog (GetActionsCatalog / FindActions). |
 | `action` | string | no | Action tag within the type (e.g. "CMD_STARTINSTANCE", "ToUpper"). Together with Type it uniquely addresses one catalog variant. |
-| `parameters` | array of object | no | Parameter values keyed by the schema parameter name of the selected variant (see GetActionSchema). Validated against the catalog schema; missing required parameters are rejected with validation errors. |
-| `results` | array of object | no | Result bindings keyed by the schema result name (e.g. OutputVariable). The value is the project variable name to store the result into; variables that do not exist yet are created. |
+| `parameters` | object | no | Parameter values keyed by the schema parameter name of the selected variant (see GetActionSchema). Validated against the catalog schema; missing required parameters are rejected with validation errors. |
+| `results` | object | no | Result bindings keyed by the schema result name (e.g. OutputVariable). The value is the project variable name to store the result into; variables that do not exist yet are created. |
 | `bindings` | object | no | Optional structured-binding payload (e.g. ElementFinder / XPathFinder). When non-null, the engine applies it to action.Parameters after writing flat parameters and before binding-validation. |
+| `groupId` | string | no | Put the cube in this existing group instead of letting the cursor decide. Combined with AfterActionId it picks the slot; on its own the cube goes last in the group. |
+| `afterActionId` | string | no | Put the cube straight after this one, inside its group. Implies the group, so GroupId can be left out. |
+| `x` | integer | no | Left edge for the new group the cube starts. Pass both coordinates or neither, and not together with GroupId or AfterActionId, which place the cube in a group that already exists. Either mistake is rejected rather than half applied. |
+| `y` | integer | no | Top edge for the new group the cube goes into. |
 | `succesLink` | string | no | Reserved — currently ignored by the engine; wire the OnSuccess branch via SetActionLinks instead. |
 | `failLink` | string | no | Reserved — currently ignored by the engine; wire the OnError branch via SetActionLinks instead. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `409` failed_precondition · `500` internal_error
 
 **Success body (200):**
 
@@ -366,6 +409,7 @@ Add an action (OwnCode/CSharp category requires code:author, T3).
 | `actionId` | string | no | Id assigned to the newly created action. |
 | `groupId` | string | no | Id of the group the action was placed into. |
 | `validationErrors` | array of object | no | Per-parameter validation failures when the input was rejected (ResultCode RESULT_INVALID_PARAMS); null on success. |
+| `layoutConflicts` | array of object | no | What was already at the requested 'x'/'y', when the add was refused because a new group would have overlapped it. This never appears in a 200: a refusal is a 409, and the host carries these into the error body's layoutConflicts. |
 
 ### `PUT /projects/current/actions/{groupId}/{actionId}`
 
@@ -381,18 +425,43 @@ Update an action.
 |---|---|---|---|
 | `type` | string | no | Action type (catalog category tag) the action should carry — pass the value returned by GetActionDetails to keep the current type. |
 | `action` | string | no | Action tag within the type — pass the value returned by GetActionDetails to keep the current action. |
-| `parameters` | array of object | no | Parameter values keyed by the schema parameter name of the selected variant (see GetActionSchema). Validated against the catalog schema. |
-| `results` | array of object | no | Result bindings keyed by the schema result name (e.g. OutputVariable). The value is the project variable name to store the result into; missing variables are created. |
+| `parameters` | object | no | Parameter values keyed by the schema parameter name of the selected variant (see GetActionSchema). Validated against the catalog schema. |
+| `results` | object | no | Result bindings keyed by the schema result name (e.g. OutputVariable). The value is the project variable name to store the result into; missing variables are created. |
 | `bindings` | object | no | Optional structured-binding payload — see Bindings. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `validationErrors` | array of object | no | Per-parameter validation failures when the input was rejected (ResultCode RESULT_INVALID_PARAMS); null on success. |
+
+### `PUT /projects/current/actions/{groupId}/{actionId}/name`
+
+`action_rename` · tier **T1** · scope `project:edit`
+
+Set an action's display name on the schema (empty string clears it).
+
+**Path parameters:** `groupId`, `actionId`.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | no | The action's new display name, the same text the editor calls the cube's comment. Required; an empty string clears the name and the cube falls back to the auto-caption derived from its type. Free text, exactly as in the editor: no length limit, no character restrictions, and names need not be unique. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `actionId` | string | no | Id of the renamed action. |
+| `groupId` | string | no | Id of the group the action belongs to. |
+| `name` | string | no | The name the action now carries. |
 
 ### `DELETE /projects/current/actions/{groupId}/{actionId}`
 
@@ -408,7 +477,7 @@ Delete an action.
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -429,7 +498,7 @@ Move actions into a group.
 | `afterActionId` | string | no | Within the target group, insert the moved actions immediately AFTER this action. Null/empty means "insert at the start of the target group" (or "at the end" if the target is a fresh group). Must reference an action that exists in the target group BEFORE the move. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -437,6 +506,30 @@ Move actions into a group.
 |---|---|---|---|
 | `targetGroupId` | string | no | ID of the destination group (the existing one, or the freshly created group when none was supplied). |
 | `movedActions` | array of object | no | Updated (GroupId, ActionId) pairs after the move — actions retain their IDs but now report the new GroupId. |
+
+### `PUT /projects/current/groups/{groupId}/name`
+
+`group_rename` · tier **T1** · scope `project:edit`
+
+Set a group's caption above its frame (empty string clears it).
+
+**Path parameters:** `groupId`.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | no | The group's new caption, drawn above its frame. Required; an empty string clears it and the frame loses its header. Free text with no length limit, no character restrictions and no uniqueness rule, exactly as in the editor. The frame grows to fit the caption, so the cubes inside shift down as it gets taller. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `groupId` | string | no | Id of the renamed group. |
+| `name` | string | no | The name the group now carries. |
 
 ### `POST /projects/current/actions/links`
 
@@ -451,7 +544,7 @@ Set OnSuccess/OnError links (batch).
 | `links` | array of object | no | Branch assignments to apply. Each item names the source action, the branch ("OnSuccess" or "OnError") and the target action; a null/empty target clears the explicit link. Processed as a batch — see the per-item outcomes in the result. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -459,13 +552,134 @@ Set OnSuccess/OnError links (batch).
 |---|---|---|---|
 | `items` | array of object | no | Per-link outcomes in input order (Name carries the source action id). Failed items do not prevent the other links from being applied. |
 
+### `PATCH /projects/current/actions/{groupId}/{actionId}/properties`
+
+`action_properties_set` · tier **T1** · scope `project:edit`
+
+Set the cube's user flags: disabled/breakpoint/optional/comment (partial: a null field is left as it is).
+
+**Path parameters:** `groupId`, `actionId`.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `disabled` | boolean | no | Skip the cube at run time. A disabled cube always succeeds and the flow continues down its OnSuccess branch. Setting this to true raises the project's MinVersion to 7.2.1.0. |
+| `breakpoint` | boolean | no | Pause the debugger before this cube runs. |
+| `optional` | boolean | no | Do not fail the project when this cube errors. |
+| `comment` | string | no | The cube's caption on the schema. An empty string clears it, null leaves it alone. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `disabled` | boolean | yes | True when the cube is skipped at run time. |
+| `breakpoint` | boolean | yes | True when the debugger pauses before this cube. |
+| `optional` | boolean | yes | True when an error in this cube does not fail the project. |
+| `comment` | string | no | The cube's caption on the schema, empty when it has none. |
+
+### `GET /projects/current/layout`
+
+`layout_get` · tier **T0** · scope `project:read`
+
+Frame of every group on the schema (x/y/width/height).
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `groups` | array of object | no | Every group in the project, in project order. |
+| `staticBlocks` | array of object | no | The other things occupying space on the schema, such as Start and notes. They cannot be moved through the API, but a group cannot be placed over one, so they belong in any search for a free spot. |
+
+### `PUT /projects/current/groups/{groupId}/position`
+
+`group_position_set` · tier **T1** · scope `project:edit`
+
+Move one group; its actions and lines follow.
+
+**Path parameters:** `groupId`.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `x` | integer | yes | New left edge of the frame. |
+| `y` | integer | yes | New top edge of the frame. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `x` | integer | yes | Left edge of the frame after the move. |
+| `y` | integer | yes | Top edge of the frame after the move. |
+| `layoutConflicts` | array of object | no | What blocked the move, when it was refused. This never appears in a 200: a refusal is a 409, and the host carries these into the error body's layoutConflicts. |
+
+### `PUT /projects/current/layout`
+
+`layout_set` · tier **T1** · scope `project:edit`
+
+Move several groups at once (one redraw, one undo step).
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `groups` | array of object | no | The groups to move. An empty or missing list is rejected. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `applied` | integer | yes | How many groups were moved. |
+| `groups` | array of object | no | The frames of every group after the write, so a caller does not need a second read to see where things landed once the editor has had its say. |
+| `layoutConflicts` | array of object | no | The overlaps that made the batch refuse, one entry per group that could not be placed. This never appears in a 200: a refusal is a 409, and the host carries these into the error body's layoutConflicts. |
+
+### `POST /projects/current/groups/{groupId}/copy`
+
+`group_copy` · tier **T1** · scope `project:edit`
+
+Copy a group inside the open project, optionally at given coordinates.
+
+**Path parameters:** `groupId`.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `x` | integer | no | Left edge for the copy. Leave both coordinates out to have the editor find a free spot beside the original. |
+| `y` | integer | no | Top edge for the copy. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `newGroupId` | string | no | Id of the new group. |
+| `actionIds` | array of string | no | Ids of the cubes in the copy, in group order. |
+| `x` | integer | yes | Left edge of the copy's frame. |
+| `y` | integer | yes | Top edge of the copy's frame. |
+| `layoutConflicts` | array of object | no | What blocked the copy, when it was refused and nothing was created. This never appears in a 200: a refusal is a 409, and the host carries these into the error body's layoutConflicts. |
+
 ### `GET /projects/current/cursor`
 
 `cursor_get` · tier **T0** · scope `project:read`
 
 Cursor position.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -488,7 +702,7 @@ Set the cursor.
 | `groupId` | string | no | Id of the group containing the action (accompanies ActionId; not used for the lookup). |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -508,7 +722,7 @@ Execute a single action — RCE class.
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -532,7 +746,7 @@ Execution status of an action.
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
 
 **Success body (200):**
 
@@ -551,7 +765,7 @@ Execution status of an action.
 
 Last execution error.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -567,16 +781,15 @@ Last execution error.
 
 Execution logs (filter by level).
 
-**Request body:**
+**Query parameters:**
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `skipCount` | integer | yes | Paging offset: number of matching log entries to skip (query parameter "skip"; default 0). |
-| `maxCount` | integer | yes | Maximum number of entries to return (query parameter "take"; the server defaults to 100 when omitted or non-positive). |
-| `logLevel` | enum(Info \| Warning \| Error) | yes | Severity filter — a flags combination of Info (1), Warning (2), Error (4). 0/omitted means all levels. |
-| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+| Name | Type | Description |
+|---|---|---|
+| `skip` | integer | Paging offset: number of matching log entries to skip. Default 0. |
+| `take` | integer | Maximum number of entries to return. Default 100 when omitted or non-positive. |
+| `logLevel` | string | Severity filter: level names (Info, Warning, Error — comma-separated to combine) or their flag sum (Info=1, Warning=2, Error=4). Omitted = all levels. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
 
 **Success body (200):**
 
@@ -590,7 +803,7 @@ Execution logs (filter by level).
 
 List variables.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -612,7 +825,7 @@ Add variables (batch).
 | `variables` | array of object | no | Definitions of the variables to create. Each definition is processed independently; per-item outcomes are returned. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -633,7 +846,7 @@ Update variables (batch; rename via newName).
 | `variables` | array of object | no | Definitions of the variables to update, matched by Name; null fields are left unchanged. Each definition is processed independently. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -654,7 +867,7 @@ Delete variables by name.
 | `names` | array of string | no | Names of the variables to remove. Each name is processed independently; per-item outcomes are returned. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -676,7 +889,7 @@ Runtime + default value.
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -701,7 +914,7 @@ Set runtime value.
 | `value` | string | no | New current (runtime) value for the variable. Does not change the variable's design-time default value. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -713,7 +926,7 @@ _(empty object)_
 
 List the project's Lists.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -734,7 +947,7 @@ Add lists (batch).
 | `lists` | array of object | no | Definitions of the lists to create. Each definition is processed independently; per-item outcomes are returned. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -755,7 +968,7 @@ Update lists (batch; rename via newName).
 | `lists` | array of object | no | Definitions of the lists to update, matched by Name; null fields are left unchanged. Each definition is processed independently. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -776,7 +989,7 @@ Delete lists by name.
 | `names` | array of string | no | Names of the lists to remove. Each name is processed independently; per-item outcomes are returned. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -792,6 +1005,13 @@ Runtime list items (skip/take).
 
 **Path parameters:** `name`.
 
+**Query parameters:**
+
+| Name | Type | Description |
+|---|---|---|
+| `skip` | integer | Paging offset: number of items to skip. Default 0. |
+| `take` | integer | Maximum number of items to return. Default 100 when omitted or non-positive. |
+
 **Request body:**
 
 | Field | Type | Required | Description |
@@ -800,7 +1020,7 @@ Runtime list items (skip/take).
 | `take` | integer | yes | Maximum number of items to return. Default is 1000. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -825,7 +1045,7 @@ Add list items.
 | `items` | array of string | no | Items to append to the end of the list, one entry per item. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -837,7 +1057,7 @@ _(empty object)_
 
 List tables.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -858,7 +1078,7 @@ Add tables (batch).
 | `tables` | array of object | no | Definitions of the tables to create. Each definition is processed independently; per-item outcomes are returned. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -879,7 +1099,7 @@ Update tables (batch; rename via newName).
 | `tables` | array of object | no | Definitions of the tables to update, matched by Name; null fields are left unchanged. Each definition is processed independently. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -900,7 +1120,7 @@ Delete tables by name.
 | `names` | array of string | no | Names of the tables to remove. Each name is processed independently; per-item outcomes are returned. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -922,7 +1142,7 @@ Table columns.
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -947,7 +1167,7 @@ Add a column (optional header).
 | `header` | string | no | Optional header text for the new column, written into the first (header) row. Allowed only when the table is marked as having a header row — otherwise the request fails with 400. On an empty table the header materializes the header row. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -963,6 +1183,13 @@ Table rows (skip/take).
 
 **Path parameters:** `name`.
 
+**Query parameters:**
+
+| Name | Type | Description |
+|---|---|---|
+| `skip` | integer | Paging offset: number of items to skip. Default 0. |
+| `take` | integer | Maximum number of items to return. Default 100 when omitted or non-positive. |
+
 **Request body:**
 
 | Field | Type | Required | Description |
@@ -971,7 +1198,7 @@ Table rows (skip/take).
 | `take` | integer | yes | Maximum number of rows to return. Default is 1000. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -996,7 +1223,7 @@ Add a row.
 | `values` | array of string | no | Cell values of the row appended to the table, in column order. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -1008,7 +1235,7 @@ _(empty object)_
 
 List Google Spreadsheets.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -1029,7 +1256,7 @@ Add Google Spreadsheets (batch).
 | `googleSpreadsheets` | array of object | no | Definitions of the GoogleSpreadsheet statics to create. Each definition is processed independently; per-item outcomes are returned. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -1050,7 +1277,7 @@ Update Google Spreadsheets (batch).
 | `googleSpreadsheets` | array of object | no | Definitions of the GoogleSpreadsheet statics to update, matched by Name; null fields are left unchanged. Each definition is processed independently. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -1071,7 +1298,7 @@ Delete Google Spreadsheets by name.
 | `names` | array of string | no | Names of the GoogleSpreadsheet statics to remove. Each name is processed independently; per-item outcomes are returned. |
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
 
 **Success body (200):**
 
@@ -1079,13 +1306,113 @@ Delete Google Spreadsheets by name.
 |---|---|---|---|
 | `items` | array of object | no | Per-item outcomes, one per input name; a failed item does not fail the rest of the batch. |
 
+### `GET /projects/current/input-settings`
+
+`project_input_settings_list` · tier **T0** · scope `project:read`
+
+List input settings (values of a list type come back both raw and parsed).
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `settings` | array of object | no | The project's input settings in the order the form shows them. Empty when the project has no input settings block at all. |
+| `totalCount` | integer | yes | Number of settings returned. |
+| `settingsType` | string | no | Which parameter form the project actually uses at run time: InputSettings for these settings, BotUI when the project carries a BotUI block, which takes precedence and makes these settings dead weight, or None when it has neither. Writes are refused while this reads BotUI. |
+
+### `POST /projects/current/input-settings`
+
+`project_input_settings_add` · tier **T1** · scope `project:edit`
+
+Add input settings (batch).
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `settings` | array of object | no | Definitions of the settings to append to the form, in order. Each is processed independently and per-item outcomes are returned. The project's input settings block is created if it does not exist yet. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `items` | array of object | no | Per-item outcomes, one per input definition; a failed item does not fail the rest of the batch. The item's name is the stored name the setting ended up with, braces included. |
+
+### `PUT /projects/current/input-settings`
+
+`project_input_settings_update` · tier **T1** · scope `project:edit`
+
+Update input settings (batch; rename via newName).
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `settings` | array of object | no | Patches to apply, each identified by its name. Every other field is optional and null leaves that part of the setting alone. Each patch is processed independently and per-item outcomes are returned. Positions are not affected; use the reorder operation for that. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `items` | array of object | no | Per-item outcomes, one per patch; a failed item does not fail the rest of the batch. The item's name is the stored name the setting ended up with, so a rename or a change of options is visible in the reply. |
+
+### `DELETE /projects/current/input-settings`
+
+`project_input_settings_delete` · tier **T1** · scope `project:edit`
+
+Delete input settings by name.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `names` | array of string | no | Names of the settings to remove, either the stored name or the name as displayed. Each is processed independently and per-item outcomes are returned. Removing the last setting keeps the (now empty) block, matching what the editor does. The variables the settings were bound to are left in the project. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `items` | array of object | no | Per-item outcomes, one per requested name; a failed item does not fail the rest of the batch. |
+
+### `PUT /projects/current/input-settings/order`
+
+`project_input_settings_reorder` · tier **T1** · scope `project:edit`
+
+Reorder input settings by listing every name.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `names` | array of string | no | Every setting's name, in the order the form should show them. Either the stored names or the displayed ones. The list has to account for all of them exactly once: a list that skips or repeats a setting is refused outright rather than applied in part, because there is no sensible place to put the settings it left out. Reordering is all-or-nothing, so nothing moves unless the whole list checks out. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `404` not_found · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `names` | array of string | no | The stored names in the order they now sit in, so the caller can confirm the move without reading the list again. |
+
 ### `GET /projects/current/recording`
 
 `recording_get` · tier **T0** · scope `project:read`
 
 Recorder state.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
 
 **Success body (200):**
 
@@ -1105,7 +1432,7 @@ Toggle action recording.
 |---|---|---|---|
 | `isRecording` | boolean | yes | Pass true to start recording, false to stop it. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
 
 **Success body (200):**
 
@@ -1117,6 +1444,12 @@ _(empty object)_
 
 C# API surface for OwnCode (optional ?typeName=).
 
+**Query parameters:**
+
+| Name | Type | Description |
+|---|---|---|
+| `typeName` | string | Fully-qualified or short name of one type to describe in full; omitted = the summary index of all types. |
+
 **Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
 
 **Success body (200):**
@@ -1126,6 +1459,83 @@ C# API surface for OwnCode (optional ?typeName=).
 | `sources` | array of object | no | Index mode: the assemblies the digest was generated from. |
 | `types` | array of object | no | Index mode: compact list of available types (no members). |
 | `type` | object | no | Type mode: the requested type with its full member list. |
+
+### `GET /projects/current/shared-code`
+
+`shared_code_get` · tier **T0** · scope `code:read`
+
+Using directives, common code, load-from-file mode and path.
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `usings` | string | no | The user's using directives, one per line. Does not include the default ones. |
+| `commonCode` | string | no | The common code: members shared by every C# cube of the project. |
+| `loadCodeFromFile` | boolean | yes | True when the common code is loaded from LocalPath instead of the project. |
+| `localPath` | string | no | Path to the .cs file the common code is loaded from. May contain project macros. |
+
+### `PUT /projects/current/shared-code`
+
+`shared_code_set` · tier **T3** · scope `code:author`
+
+Change the shared code (partial: a null field is left as it is).
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `usings` | string | no | Replaces the user's using directives, one per line. |
+| `commonCode` | string | no | Replaces the common code. |
+| `loadCodeFromFile` | boolean | no | Turns the "load the common code from a file" mode on or off. |
+| `localPath` | string | no | Replaces the path the common code is loaded from. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `blockCreated` | boolean | yes | True when the project had no static code block and one was created for this change. |
+
+### `GET /projects/current/gac-references`
+
+`gac_references_get` · tier **T0** · scope `project:read`
+
+The project's GAC assembly references.
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `references` | array of string | no | One entry per reference, in the form the compiler and the IntelliSense resolver receive it: either an assembly name ("System.Drawing" or a full strong name) or an external DLL marked as "[external]Name[external]". |
+| `totalCount` | integer | yes |  |
+
+### `PUT /projects/current/gac-references`
+
+`gac_references_set` · tier **T1** · scope `project:edit`
+
+Replace the whole GAC reference list.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `references` | array of string | no | Assembly names, or "[external]Name[external]" for a DLL from the external assemblies folder. Same form References returns. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `references` | array of string | no | The references the project holds after the replacement. Not always the list that was sent: blank entries are dropped and duplicates collapsed, so this is what actually got stored. |
+| `totalCount` | integer | yes | Number of references the project holds after the replacement. |
+| `blockCreated` | boolean | yes | True when the project had no "GAC references" block and one was created. |
 
 ## ZennoPoster — task & session control
 
@@ -1291,7 +1701,7 @@ Set the thread limit.
 
 `task_tries_get` · tier **T0** · scope `task:read`
 
-Queued tries (NumberOfTries).
+Queued tries (NumberOfTries); -1 means the task runs forever.
 
 **Path parameters:** `id`.
 
@@ -1301,13 +1711,13 @@ Queued tries (NumberOfTries).
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `tries` | integer | yes | The queued-tries counter, always >= 0. On PUT this is the value actually applied, re-read after the commit. |
+| `tries` | integer | yes | The queued-tries counter: >= 0, or -1 when the task runs forever. On PUT this is the value actually applied, re-read after the commit. |
 
 ### `POST /tasks/{id}/tries/add`
 
 `task_tries_add` · tier **T1** · scope `task:edit`
 
-Add tries — starts a ready task (gated like task_start when it would start).
+Add tries, or -1 to run forever — starts a ready task (gated like task_start when it would start).
 
 **Path parameters:** `id`.
 
@@ -1315,7 +1725,7 @@ Add tries — starts a ready task (gated like task_start when it would start).
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `count` | integer | yes | Number of run tries to add to the task's queue. Must be >= 1 (use PUT /tasks/{id}/tries to lower the queue); rejected with 400 otherwise. Adding tries to a ready task starts it. |
+| `count` | integer | yes | Number of run tries to add to the task's queue. Must be >= 1, or -1 to make the task run forever; anything else is rejected with 400. Use PUT /tasks/{id}/tries to lower the queue. -1 does not add anything: it switches the task to endless execution, the same as the "Perform infinitely" button in ZennoPoster. Adding tries to a ready task starts it. |
 
 **Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
 
@@ -1323,14 +1733,14 @@ Add tries — starts a ready task (gated like task_start when it would start).
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `totalTries` | integer | yes | The queued-tries counter after the add, re-read from the task (actually applied, not an echo). |
-| `addedTries` | integer | yes | Number of tries this call added (echoes the request's count). |
+| `totalTries` | integer | yes | The queued-tries counter after the add, re-read from the task (actually applied, not an echo). -1 means the task now runs forever. |
+| `addedTries` | integer | yes | Number of tries this call added (echoes the request's count), or -1 when the call switched the task to running forever. |
 
 ### `PUT /tasks/{id}/tries`
 
 `task_tries_set` · tier **T1** · scope `task:edit`
 
-Set tries — starts a ready task (gated like task_start when it would start).
+Set tries, or -1 to run forever — starts a ready task (gated like task_start when it would start).
 
 **Path parameters:** `id`.
 
@@ -1338,7 +1748,7 @@ Set tries — starts a ready task (gated like task_start when it would start).
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `tries` | integer | yes | New value for the queued-tries counter. Must be >= 0; rejected with 400 otherwise. Setting a positive value on a ready task starts it. |
+| `tries` | integer | yes | New value for the queued-tries counter. Must be >= 0, or -1 to make the task run forever; anything else is rejected with 400. A task on -1 keeps running until it is stopped, because the counter is never counted down. Setting a non-zero value on a ready task starts it. |
 
 **Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
 
@@ -1346,7 +1756,7 @@ Set tries — starts a ready task (gated like task_start when it would start).
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `tries` | integer | yes | The queued-tries counter, always >= 0. On PUT this is the value actually applied, re-read after the commit. |
+| `tries` | integer | yes | The queued-tries counter: >= 0, or -1 when the task runs forever. On PUT this is the value actually applied, re-read after the commit. |
 
 ### `GET /tasks/{id}/settings/execution`
 
@@ -1363,7 +1773,7 @@ Execution settings.
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `limitOfThreads` | integer | no | Thread limit for the task, at least 1. |
-| `numberOfTries` | integer | no | Number of tries to queue, 0 or more. A non-zero value on a ready task starts it — gated like task_start. |
+| `numberOfTries` | integer | no | Number of tries to queue: 0 or more, or -1 to run forever. A non-zero value on a ready task starts it — gated like task_start. |
 | `priority` | integer | no | Priority: 10 low, 50 medium, 100 high, 100000 critical. |
 | `proxy` | string | no | Proxy usage mode, one of: DoNotUseProxy, IfPossible, UseProxyWithoutRemove, UseProxy. |
 | `proxyLabels` | string | no | Comma-separated proxy labels. |
@@ -1387,7 +1797,7 @@ Update execution settings (merge semantics; may start a ready task — gated lik
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `limitOfThreads` | integer | no | Thread limit for the task, at least 1. |
-| `numberOfTries` | integer | no | Number of tries to queue, 0 or more. A non-zero value on a ready task starts it — gated like task_start. |
+| `numberOfTries` | integer | no | Number of tries to queue: 0 or more, or -1 to run forever. A non-zero value on a ready task starts it — gated like task_start. |
 | `priority` | integer | no | Priority: 10 low, 50 medium, 100 high, 100000 critical. |
 | `proxy` | string | no | Proxy usage mode, one of: DoNotUseProxy, IfPossible, UseProxyWithoutRemove, UseProxy. |
 | `proxyLabels` | string | no | Comma-separated proxy labels. |
@@ -2133,11 +2543,12 @@ Manifest: operations, tiers, required scopes.
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `host` | string | no | Host identity, e.g. "projectmaker" / "zennoposter". |
-| `version` | string | no | Contract semver (ContractVersion). |
+| `version` | string | no | Semantic version of the contract this host serves. |
+| `productVersion` | string | no | Version of the product serving this API, e.g. "7.9.2.0". Empty when the host does not report one — read that as unknown, not as old. |
 | `currentScopes` | array of string | no | Scopes granted to the current key. |
 | `currentMaxTier` | integer | yes | Highest tier the current key may invoke (0..3). |
-| `operations` | array of object | no | Every operation of the host's domains, one entry each — including operations the current key cannot invoke (see IsAvailable). |
-| `tierLegend` | array of object | no | Static legend of the tier taxonomy for client display. |
+| `operations` | array of object | no | Every operation of the host's domains, one entry each — including operations the current key cannot invoke (their isAvailable is false). |
+| `tierLegend` | object | no | Static legend of the tier taxonomy for client display. |
 
 ### `GET /confirmations`
 

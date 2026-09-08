@@ -6,8 +6,11 @@
 
 Русский перевод — вспомогательный; при расхождении верной считается [английская версия](../index.md).
 
+Этот сайт описывает ZennoPoster **7.9.2 и новее** и ZennoDroid **2.6.1 и новее**, версию контракта **1.1.0**, MCP-серверы **0.2.0**. Какой сервер к какому продукту и как узнать версии у своей установки — в [compatibility.md](compatibility.md).
+
 - **[developer-guide.md](developer-guide.md)** — начните здесь: быстрый старт, выпуск ключа, скоупы/тиры, примеры запросов по доменам, `/capabilities`.
 - **[versioning-and-deprecation.md](versioning-and-deprecation.md)** — политика semver (что считается breaking change), окно устаревания и контракт заголовков `Deprecation`/`Sunset`.
+- **[compatibility.md](compatibility.md)** — какая версия продукта, версия контракта и версия MCP-серверов сочетаются между собой и как узнать все три у работающей установки.
 - **[errors.md](errors.md)** — каждый HTTP-статус и код ошибки, который возвращает этот API, и как его обрабатывать.
 - **[security-model.md](security-model.md)** — что защищает `ApiKey`, а что нет, доступ только с localhost, аудит.
 
@@ -18,4 +21,4 @@
 
 Подключение LLM-клиента к MCP-серверам описано отдельно — в [README репозитория](https://github.com/ZennoLab/zennoposter-mcp).
 
-<!-- translated-from: index.md b768e7d951de1f55b10673911ae17d23a047f793 -->
+<!-- translated-from: index.md ed58c76745b20258076217f7b5d839e224f7d282 -->

@@ -11,12 +11,17 @@ Applies to every operation in the published contract.
 ## Contract version & base path
 
 - Every operation lives under **`/api/v1`**. The major version is part of the path.
-- The contract itself carries a semantic version, currently `1.0.0`.
+- The contract itself carries a semantic version, currently `1.1.0`. It is reported in
+  `info.version` of the OpenAPI document and in `version` of `GET /capabilities`.
+- The contract version moves by the rules below — per contract change, not per product release. A
+  product release that changes nothing in the contract leaves it where it is; see
+  [compatibility.md](compatibility.md) for the product-to-contract mapping.
 
 ## Semver rules
 
 | Change | Class | Why |
 |---|---|---|
+| Implementation fix with no shape change | none | The published contract is unchanged; only the product version moves. |
 | Documentation/description/example fix, no shape change | **PATCH** | Nothing a client's code depends on changes. |
 | New operation, or a new **optional** field on a request/response | **MINOR** | Existing clients keep working unmodified; new capability is opt-in. |
 | New scope grantable on a key, without changing any existing operation's required scope | **MINOR** | Purely additive to what a key *can* be issued; doesn't affect callers already using the API. |

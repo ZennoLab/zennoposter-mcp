@@ -93,6 +93,12 @@ Adding an action whose `type` is `OwnCode` additionally requires
 project are gated separately, so a low-privilege key can run a trusted project without being able
 to inject and execute new code.
 
+The project's shared code block is in the same class. `GET /projects/current/shared-code` reads the
+using directives and common code at T0 with `code:read`, while `PUT` on the same path needs
+`code:author` at T3, because that code is compiled into the project and runs with it. The block's
+GAC reference list is separate: `GET /projects/current/gac-references` is T0 `project:read` and the
+`PUT` that replaces it is T1 `project:edit`, since a reference on its own executes nothing.
+
 ### ZennoPoster tasks (`task:*`) — host = ZennoPoster Core
 
 ```
@@ -279,7 +285,8 @@ without one — see below):
 ```json
 {
   "host": "zennoposter",
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "productVersion": "7.9.2.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,
   "operations": [
@@ -303,3 +310,7 @@ hosts do **not** expose the same operation set). `isAvailable` is `true` only wh
 `false` entry can mean either "not yours to call" or "not built yet on this host"; check
 `requiredScope`/`tier` against your own `currentScopes`/`currentMaxTier` to tell which. Calling
 `/capabilities` before attempting a call is the cheapest way to avoid a predictable `403`/`501`.
+
+`version` is the contract version this host serves and `productVersion` the product build behind it,
+so one call tells you what you are talking to; an empty `productVersion` means the host does not
+report one. [compatibility.md](compatibility.md) maps both onto the MCP server releases.
