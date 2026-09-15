@@ -11,7 +11,7 @@ serves, and the MCP server binaries you downloaded. This page maps them onto eac
 
 ## Supported combinations
 
-Contract version: **1.1.0**.
+Contract version: **1.2.0**.
 
 Every server release states the minimum product version it works with; a dash means the server does
 not apply to that product. Take the newest row your installed version satisfies — archives of every
@@ -22,12 +22,14 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.3.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.2.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 
 ### MCP.ZennoPoster
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.3.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.2.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 
 ### MCP.Instance
@@ -65,7 +67,7 @@ curl -H "Authorization: Bearer <api-key>" http://localhost:5299/api/v1/capabilit
   carrying `isAvailable: false`, cannot be called there.
 
 The MCP server version is the one in the release tag and in the archive name, for example
-`mcp-projectmaker-v0.2.0` and `MCP.ProjectMaker-v0.2.0-win-x64.zip`.
+`mcp-projectmaker-v0.3.0` and `MCP.ProjectMaker-v0.3.0-win-x64.zip`.
 
 ## When the numbers disagree
 

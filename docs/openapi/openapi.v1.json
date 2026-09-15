@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "ZennoLab PublicApi",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Versioned, transport-neutral control plane for ProjectMaker and ZennoPoster."
   },
   "servers": [
@@ -7107,6 +7107,73 @@
           },
           "404": {
             "description": "not_found: The referenced project/action/variable/list/table/spreadsheet does not exist (RESULT_NOT_FOUND)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/input-settings/block": {
+      "delete": {
+        "operationId": "project_input_settings_block_delete",
+        "summary": "Delete the entire input settings block (idempotent; removed:false when there is no block to delete)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "project:edit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": {
+                      "type": "boolean",
+                      "description": "True when a block was present and has been removed; false when the project had no input settings block (idempotent \u2014 the call succeeds either way)."
+                    },
+                    "settingsType": {
+                      "type": "string",
+                      "description": "The settings type that was in effect before the operation: \u0022InputSettings\u0022 when a block existed, \u0022BotUI\u0022 when a BotUI block was in use instead, \u0022None\u0022 when no block was present."
+                    }
+                  },
+                  "required": [
+                    "removed"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "project_not_open: No project is open in the editor \u2014 open or create one first (RESULT_PROJECT_NOT_OPEN)."
           },
           "500": {
             "description": "Internal error"

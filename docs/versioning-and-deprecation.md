@@ -11,7 +11,7 @@ Applies to every operation in the published contract.
 ## Contract version & base path
 
 - Every operation lives under **`/api/v1`**. The major version is part of the path.
-- The contract itself carries a semantic version, currently `1.1.0`. It is reported in
+- The contract itself carries a semantic version, currently `1.2.0`. It is reported in
   `info.version` of the OpenAPI document and in `version` of `GET /capabilities`.
 - The contract version moves by the rules below — per contract change, not per product release. A
   product release that changes nothing in the contract leaves it where it is; see

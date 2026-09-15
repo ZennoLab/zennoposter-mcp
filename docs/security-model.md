@@ -43,16 +43,24 @@ An issued `ApiKey` is deliberately **not** equivalent to running as the machine'
 machine the API runs on — they can read the process memory, the UI and the filesystem regardless.
 What it *does* buy you: it closes the open-localhost hole to *other* local processes that don't
 hold a valid key, it bounds how much any one integration (including an AI agent) can do (scope +
-tier), and it gives every call a traceable identity (see audit, below).
+tier), and it ties every call to a named key you can revoke on its own.
 
 ## 3. Audit
 
-Every authorized call is written to an append-only log (JSONL — one JSON object per line),
-queryable via `GET /api/v1/audit` (admin scope only): timestamp, key id, method, path, status code,
-required scopes, tier, duration. The audit log holds **call metadata only** — never a raw key or
-its hash — so, unlike the key registry, it is **not** encrypted at rest; treat it as operational
-log data, not a secret.
+Key administration is written to an append-only log (JSONL — one JSON object per line), queryable
+via `GET /api/v1/audit` (admin scope only): timestamp, key id, method, path, status code, required
+scopes, tier, duration. That covers the `admin`-scope operations — issuing, listing and revoking
+keys, and reading the log itself — including attempts that were denied.
+
+**Ordinary domain calls are not journaled.** Nothing records that a key ran a project, started a
+task or executed an action, so the log answers "who changed the keys", not "what did this key do".
+Plan for that if your threat model needs per-call attribution: the product's own logs, not this
+endpoint, are where an executed operation leaves a trace.
+
+The audit log holds **call metadata only** — never a raw key or its hash — so, unlike the key
+registry, it is **not** encrypted at rest; treat it as operational log data, not a secret.
 
 There is **no human-in-the-loop confirmation** for high-tier calls (`T2`/`T3`): authorization is
-scope + tier + audit only. Don't design an integration assuming a human will be prompted before a
-`T3` (OS-level) operation runs.
+scope + tier, and the call itself leaves no audit record. Don't design an integration assuming a
+human will be prompted before a `T3` (OS-level) operation runs, or that you will find it in the log
+afterwards.

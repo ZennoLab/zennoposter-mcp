@@ -255,10 +255,12 @@ POST /auth/keys        (T3, admin)     — issue a key (same operation the UI ca
 GET  /audit            (T0, admin)     — the call log
 ```
 
-**`GET /audit` is the journal of ALL PublicApi HTTP calls on the host** — not just key
-operations. Each record carries the timestamp, the key's id/label (never the token itself), the
-method, path and status code; filter with `?since=`/`?until=` (ISO-8601), `?keyId=`, `?method=`,
-`?statusCode=`, page with `?skip=`/`?take=`.
+**`GET /audit` is the journal of key administration on the host**: the `admin`-scope operations
+(`/auth/keys*` and `/audit` itself), including attempts that were denied. Ordinary domain calls —
+everything under `/projects`, `/tasks`, `/instances` and the rest — are **not** journaled, so the log
+tells you who changed the set of keys, not what a key went on to do. Each record carries the
+timestamp, the key's id/label (never the token itself), the method, path and status code; filter with
+`?since=`/`?until=` (ISO-8601), `?keyId=`, `?method=`, `?statusCode=`, page with `?skip=`/`?take=`.
 
 **`GET /auth/keys`** lists every key record with `systemProvisioned` (auto-issued by the host for
 its own built-in MCP servers — you did not create those, and the "My keys" UI hides them) and
@@ -285,7 +287,7 @@ without one — see below):
 ```json
 {
   "host": "zennoposter",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "productVersion": "7.9.2.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,

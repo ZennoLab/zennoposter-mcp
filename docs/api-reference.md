@@ -1406,6 +1406,27 @@ Reorder input settings by listing every name.
 |---|---|---|---|
 | `names` | array of string | no | The stored names in the order they now sit in, so the caller can confirm the move without reading the list again. |
 
+### `DELETE /projects/current/input-settings/block`
+
+`project_input_settings_block_delete` · tier **T1** · scope `project:edit`
+
+Delete the entire input settings block (idempotent; removed:false when there is no block to delete).
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `removed` | boolean | yes | True when a block was present and has been removed; false when the project had no input settings block (idempotent — the call succeeds either way). |
+| `settingsType` | string | no | The settings type that was in effect before the operation: "InputSettings" when a block existed, "BotUI" when a BotUI block was in use instead, "None" when no block was present. |
+
 ### `GET /projects/current/recording`
 
 `recording_get` · tier **T0** · scope `project:read`

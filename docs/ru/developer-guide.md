@@ -178,7 +178,7 @@ POST /auth/keys        (T3, admin)      — выпустить ключ (та ж
 GET  /audit            (T0, admin)      — журнал вызовов
 ```
 
-**`GET /audit` — журнал ВСЕХ HTTP-вызовов PublicApi на хосте**, а не только операций с ключами. Каждая запись несёт временную метку, id/label ключа (никогда сам токен), метод, путь и код статуса; фильтруйте `?since=`/`?until=` (ISO-8601), `?keyId=`, `?method=`, `?statusCode=`, пагинация `?skip=`/`?take=`.
+**`GET /audit` — журнал администрирования ключей на хосте**: операций скоупа `admin` (`/auth/keys*` и сам `/audit`), включая отклонённые попытки. Обычные доменные вызовы — всё под `/projects`, `/tasks`, `/instances` и прочим — в журнал **не** попадают, поэтому он говорит, кто менял набор ключей, а не что ключ потом делал. Каждая запись несёт временную метку, id/label ключа (никогда сам токен), метод, путь и код статуса; фильтруйте `?since=`/`?until=` (ISO-8601), `?keyId=`, `?method=`, `?statusCode=`, пагинация `?skip=`/`?take=`.
 
 **`GET /auth/keys`** перечисляет каждую запись ключа с `systemProvisioned` (автовыпущен хостом для его встроенных MCP-сайдкаров — вы их не создавали, и UI «My keys» их скрывает) и `status` (`active`, `expired` или `disabled`). Истёкший/отключённый ключ уже не проходит аутентификацию, но остаётся в списке до отзыва — отзыв удаляет запись физически и необратим. Фильтры: `?includeSystemProvisioned=false` и `?status=` (`active`, `expired` или `disabled`).
 
@@ -198,7 +198,7 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 ```json
 {
   "host": "zennoposter",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "productVersion": "7.9.2.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,
@@ -220,4 +220,4 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 
 `version` — версия контракта, которую обслуживает хост, `productVersion` — сборка продукта за ним, так что один вызов говорит, с чем именно вы общаетесь; пустой `productVersion` означает, что хост его не сообщает. Сопоставление обоих с релизами MCP-серверов — в [compatibility.md](compatibility.md).
 
-<!-- translated-from: developer-guide.md 5790426c6969668b8838b593fc3ac40cd37f79ec -->
+<!-- translated-from: developer-guide.md 68bf743503636e25801e828367b54a96a3d9451a -->
