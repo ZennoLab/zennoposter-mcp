@@ -1,0 +1,6 @@
+// Theme variable overrides for the published docs site (just-the-docs). Imported after the theme's
+// variables and before any CSS is emitted.
+
+// Wider content column than the theme default (50rem): the operation reference and the install page
+// carry tables that otherwise scroll horizontally.
+$content-width: 64rem;
