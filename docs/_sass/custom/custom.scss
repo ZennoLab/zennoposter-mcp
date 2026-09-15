@@ -1,0 +1,8 @@
+// Custom styles for the published docs site (just-the-docs).
+
+// Install buttons in tables: shields badges render at 28px and read too small next to table text.
+td a img[alt^="Add to"] {
+  height: 2rem;
+  max-width: none;
+  vertical-align: middle;
+}
