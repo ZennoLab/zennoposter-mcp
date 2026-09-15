@@ -6,61 +6,30 @@ Requires ZennoPoster 7.9.2 or newer, or ZennoDroid 2.6.1 or newer, on Windows. T
 be running before you add it to a client: download it, issue an ApiKey and start the server as
 described in the [repository README](https://github.com/ZennoLab/zennoposter-mcp#readme).
 
-| Server | Name | Port | Product |
-|---|---|---|---|
-| MCP.ProjectMaker | `projectmaker` | 6207 | ZennoPoster, ZennoDroid |
-| MCP.Instance, target ProjectMaker | `instance-pm` | 6208 | ZennoPoster |
-| MCP.Instance, target ZennoPoster | `instance-zp` | 6209 | ZennoPoster |
-| MCP.ZennoPoster | `zennoposter` | 6210 | ZennoPoster, ZennoDroid |
-| MCP.Android | `android` | 6211 | ZennoDroid |
-
 The commands and buttons below use the default ports. If you started a server on another port, use
 that port in the client configuration.
 
-## ProjectMaker
+## Cursor and VS Code
+
+| Server | Name | Port | Product | Cursor | VS Code |
+|---|---|---|---|---|---|
+| MCP.ProjectMaker | `projectmaker` | 6207 | ZennoPoster, ZennoDroid | [![Add to Cursor](https://img.shields.io/badge/Cursor-Add_server-000000?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.com/en/install-mcp?name=projectmaker&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMDcifQ%3D%3D) | [![Add to VS Code](https://img.shields.io/badge/VS_Code-Add_server-0098FF?style=for-the-badge)](https://vscode.dev/redirect/mcp/install?name=projectmaker&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6207%22%7D) |
+| MCP.Instance, target ProjectMaker | `instance-pm` | 6208 | ZennoPoster | [![Add to Cursor](https://img.shields.io/badge/Cursor-Add_server-000000?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.com/en/install-mcp?name=instance-pm&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMDgifQ%3D%3D) | [![Add to VS Code](https://img.shields.io/badge/VS_Code-Add_server-0098FF?style=for-the-badge)](https://vscode.dev/redirect/mcp/install?name=instance-pm&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6208%22%7D) |
+| MCP.Instance, target ZennoPoster | `instance-zp` | 6209 | ZennoPoster | [![Add to Cursor](https://img.shields.io/badge/Cursor-Add_server-000000?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.com/en/install-mcp?name=instance-zp&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMDkifQ%3D%3D) | [![Add to VS Code](https://img.shields.io/badge/VS_Code-Add_server-0098FF?style=for-the-badge)](https://vscode.dev/redirect/mcp/install?name=instance-zp&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6209%22%7D) |
+| MCP.ZennoPoster | `zennoposter` | 6210 | ZennoPoster, ZennoDroid | [![Add to Cursor](https://img.shields.io/badge/Cursor-Add_server-000000?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.com/en/install-mcp?name=zennoposter&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMTAifQ%3D%3D) | [![Add to VS Code](https://img.shields.io/badge/VS_Code-Add_server-0098FF?style=for-the-badge)](https://vscode.dev/redirect/mcp/install?name=zennoposter&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6210%22%7D) |
+| MCP.Android | `android` | 6211 | ZennoDroid | [![Add to Cursor](https://img.shields.io/badge/Cursor-Add_server-000000?style=for-the-badge&logo=cursor&logoColor=white)](https://cursor.com/en/install-mcp?name=android&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMTEifQ%3D%3D) | [![Add to VS Code](https://img.shields.io/badge/VS_Code-Add_server-0098FF?style=for-the-badge)](https://vscode.dev/redirect/mcp/install?name=android&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6211%22%7D) |
+
+## Claude Code
+
+Run the line for each server you use:
 
 ```shell
 claude mcp add --transport http projectmaker http://localhost:6207
-```
-
-[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=projectmaker&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMDcifQ%3D%3D)
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=projectmaker&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6207%22%7D)
-
-## Instance, target ProjectMaker
-
-```shell
 claude mcp add --transport http instance-pm http://localhost:6208
-```
-
-[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=instance-pm&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMDgifQ%3D%3D)
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=instance-pm&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6208%22%7D)
-
-## Instance, target ZennoPoster
-
-```shell
 claude mcp add --transport http instance-zp http://localhost:6209
-```
-
-[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=instance-zp&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMDkifQ%3D%3D)
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=instance-zp&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6209%22%7D)
-
-## ZennoPoster
-
-```shell
 claude mcp add --transport http zennoposter http://localhost:6210
-```
-
-[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=zennoposter&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMTAifQ%3D%3D)
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=zennoposter&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6210%22%7D)
-
-## Android (ZennoDroid)
-
-```shell
 claude mcp add --transport http android http://localhost:6211
 ```
-
-[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=android&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYyMTEifQ%3D%3D)
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=android&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22http%3A%2F%2Flocalhost%3A6211%22%7D)
 
 ## Configuration files
 
