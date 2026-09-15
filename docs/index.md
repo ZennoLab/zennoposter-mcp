@@ -28,7 +28,8 @@ how to read the versions off your own installation, are in [compatibility.md](co
   explorer in the site navigation.
 
 Connecting an LLM client to the MCP servers is documented separately, in the
-[repository README](https://github.com/ZennoLab/zennoposter-mcp).
+[repository README](https://github.com/ZennoLab/zennoposter-mcp). Install buttons for Cursor and
+VS Code and the Claude Code commands are in **[install.md](install.md)**.
 
 ## Русская версия
 

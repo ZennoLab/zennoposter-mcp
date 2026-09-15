@@ -56,6 +56,11 @@ defaults:
           title: Overview
           nav_order: 1
     - scope:
+          path: install.md
+      values:
+          title: Install MCP servers
+          nav_order: 1.5
+    - scope:
           path: developer-guide.md
       values:
           title: Developer guide
@@ -91,6 +96,12 @@ defaults:
           title: Русский
           nav_order: 8
           has_children: true
+    - scope:
+          path: ru/install.md
+      values:
+          title: Установка MCP-серверов
+          parent: Русский
+          nav_order: 0
     - scope:
           path: ru/developer-guide.md
       values:

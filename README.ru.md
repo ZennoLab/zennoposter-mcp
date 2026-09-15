@@ -21,6 +21,9 @@ MCP-серверы публикуются как self-contained `win-x64` бин
 Какая версия сервера сочетается с какой версией продукта и контракта:
 **https://zennolab.github.io/zennoposter-mcp/ru/compatibility.html**.
 
+Кнопки установки для Cursor и VS Code и команды Claude Code для каждого сервера:
+**https://zennolab.github.io/zennoposter-mcp/ru/install.html**.
+
 ## Модель: свой экземпляр MCP со своим ключом
 
 Продукт **сам** поднимает внутренние MCP-серверы для своего AI-чата — они живут на
@@ -125,11 +128,11 @@ HTTP-запросы) — задаются только вместе, как па
       "type": "http",
       "url": "http://localhost:6207"
     },
-    "instance-projectmaker": {
+    "instance-pm": {
       "type": "http",
       "url": "http://localhost:6208"
     },
-    "instance-zennoposter": {
+    "instance-zp": {
       "type": "http",
       "url": "http://localhost:6209"
     },
@@ -188,3 +191,10 @@ ZennoDroid:
 
 Имя секции у каждого сервера своё: `NeuroBot` у `MCP.ProjectMaker`, `Instance` у `MCP.Instance`,
 `ZennoPosterApi` у `MCP.ZennoPoster`, `Android` у `MCP.Android`.
+
+## Лицензия
+
+Файлы этого репозитория (документация и спецификация OpenAPI) распространяются по
+[лицензии MIT](https://github.com/ZennoLab/zennoposter-mcp/blob/main/LICENSE). Бинарные сборки
+MCP-серверов на странице Releases проприетарные, условия их использования — в
+[TERMS.ru.md](https://github.com/ZennoLab/zennoposter-mcp/blob/main/TERMS.ru.md).

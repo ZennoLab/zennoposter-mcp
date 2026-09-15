@@ -21,6 +21,9 @@ and `MCP.ZennoPoster` apply to both.
 Which server version goes with which product and contract version:
 **https://zennolab.github.io/zennoposter-mcp/compatibility.html**.
 
+Install buttons for Cursor and VS Code and the Claude Code commands for every server:
+**https://zennolab.github.io/zennoposter-mcp/install.html**.
+
 ## The model: your own MCP instance with your own key
 
 The product **itself** starts internal MCP servers for its built-in AI chat — they live on
@@ -131,11 +134,11 @@ equivalent for your MCP client if needed):
       "type": "http",
       "url": "http://localhost:6207"
     },
-    "instance-projectmaker": {
+    "instance-pm": {
       "type": "http",
       "url": "http://localhost:6208"
     },
-    "instance-zennoposter": {
+    "instance-zp": {
       "type": "http",
       "url": "http://localhost:6209"
     },
@@ -194,3 +197,10 @@ ZennoDroid:
 
 The section name differs per server: `NeuroBot` for `MCP.ProjectMaker`, `Instance` for
 `MCP.Instance`, `ZennoPosterApi` for `MCP.ZennoPoster`, `Android` for `MCP.Android`.
+
+## License
+
+The files in this repository (documentation and the OpenAPI specification) are licensed under the
+[MIT License](https://github.com/ZennoLab/zennoposter-mcp/blob/main/LICENSE). The MCP server
+binaries on the Releases page are proprietary; their terms are in
+[TERMS.md](https://github.com/ZennoLab/zennoposter-mcp/blob/main/TERMS.md).

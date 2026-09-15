@@ -19,6 +19,6 @@
 - **[api-reference.md](../api-reference.md)** — полный справочник операций: каждый метод по доменам, с глаголом, путём, уровнем риска, требуемым скоупом, полями тела запроса и кодами ответа.
 - **[openapi/openapi.v1.json](../openapi/openapi.v1.json)** — машиночитаемый документ OpenAPI 3.0.3; **[openapi/index.html](../openapi/index.html)** отображает его через Redoc.
 
-Подключение LLM-клиента к MCP-серверам описано отдельно — в [README репозитория](https://github.com/ZennoLab/zennoposter-mcp).
+Подключение LLM-клиента к MCP-серверам описано отдельно — в [README репозитория](https://github.com/ZennoLab/zennoposter-mcp). Кнопки установки для Cursor и VS Code и команды Claude Code — в **[install.md](install.md)**.
 
-<!-- translated-from: index.md da4636e81611e96ffc6328e8b1dbd6bf5a764536 -->
+<!-- translated-from: index.md 968e1f3e8522499b0bd23f471cc6579b5dd77234 -->
