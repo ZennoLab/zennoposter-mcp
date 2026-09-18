@@ -42,10 +42,10 @@ MCP-серверы публикуются как self-contained `win-x64` бин
 
 | Сервер | Порт | Ходит в | Ключ в конфиге |
 |---|---|---|---|
-| `MCP.ProjectMaker` | **6207** | PM PublicApi `:5299` | `NeuroBot:ApiKey` |
+| `MCP.ProjectMaker` | **6207** | PM PublicApi `:5299` | `ProjectMaker:ApiKey` |
 | `MCP.Instance` (Target=projectmaker) | **6208** | PM PublicApi `:5299` | `Instance:ApiKey` |
 | `MCP.Instance` (Target=zennoposter) | **6209** (конвенция, задать явно) | ZP PublicApi `:5300` | `Instance:ApiKey` |
-| `MCP.ZennoPoster` | **6210** | ZP PublicApi `:5300` | `ZennoPosterApi:ApiKey` |
+| `MCP.ZennoPoster` | **6210** | ZP PublicApi `:5300` | `ZennoPoster:ApiKey` |
 | `MCP.Android` (ZennoDroid) | **6211** | ZDroid PublicApi `:5309` | `Android:ApiKey` |
 
 API продукта, в который ходят эти серверы, слушает в двух продуктах на разных портах:
@@ -59,8 +59,8 @@ API продукта, в который ходят эти серверы, слу
 `BaseUrl` из столбца ZennoDroid, как показано в разделе «Изменить порты».
 
 Всё переопределяется штатной конфигурацией ASP.NET Core: `appsettings.json` рядом с exe,
-переменные окружения (`ASPNETCORE_URLS`, `NeuroBot__ApiKey`, …) или аргументы командной
-строки (`--urls`, `--NeuroBot:ApiKey=…`, …) — аргументы сильнее окружения, окружение
+переменные окружения (`ASPNETCORE_URLS`, `ProjectMaker__ApiKey`, …) или аргументы командной
+строки (`--urls`, `--ProjectMaker:ApiKey=…`, …) — аргументы сильнее окружения, окружение
 сильнее `appsettings.json`.
 
 ## 1. Скачать нужный сервер
@@ -90,7 +90,7 @@ API продукта, в который ходят эти серверы, слу
 
 ```powershell
 # ProjectMaker (редактор): 6207 -> :5299
-.\ZennoLab.AI.MCP.ProjectMaker.exe --NeuroBot:ApiKey=zp_xxx
+.\ZennoLab.AI.MCP.ProjectMaker.exe --ProjectMaker:ApiKey=zp_xxx
 
 # Instance для редактора (браузер PM): 6208 -> :5299
 .\ZennoLab.AI.MCP.Instance.exe --Instance:ApiKey=zp_xxx
@@ -101,7 +101,7 @@ API продукта, в который ходят эти серверы, слу
   --Instance:ApiKey=zp_xxx
 
 # ZennoPoster (задачи/сессии раннера): 6210 -> :5300
-.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPosterApi:ApiKey=zp_xxx
+.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:ApiKey=zp_xxx
 
 # Android (устройство ZennoDroid): 6211 -> :5309
 .\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
@@ -183,14 +183,15 @@ ZennoDroid:
 
 ```powershell
 # API ProjectMaker на 5309 вместо 5299
-.\ZennoLab.AI.MCP.ProjectMaker.exe --NeuroBot:BaseUrl=http://localhost:5309/api/v1 --NeuroBot:ApiKey=zp_xxx
+.\ZennoLab.AI.MCP.ProjectMaker.exe --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 --ProjectMaker:ApiKey=zp_xxx
 
 # API ZennoPoster на 5310 вместо 5300
-.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPosterApi:BaseUrl=http://localhost:5310/api/v1 --ZennoPosterApi:ApiKey=zp_xxx
+.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:BaseUrl=http://localhost:5310/api/v1 --ZennoPoster:ApiKey=zp_xxx
 ```
 
-Имя секции у каждого сервера своё: `NeuroBot` у `MCP.ProjectMaker`, `Instance` у `MCP.Instance`,
-`ZennoPosterApi` у `MCP.ZennoPoster`, `Android` у `MCP.Android`.
+Секция называется по имени сервера: `ProjectMaker`, `Instance`, `ZennoPoster`, `Android`.
+В версиях до 0.3.0 включительно `MCP.ProjectMaker` и `MCP.ZennoPoster` использовали `NeuroBot` и
+`ZennoPosterApi`; эти имена работают и в более новых версиях, при старте сервер пишет предупреждение в лог.
 
 ## Лицензия
 

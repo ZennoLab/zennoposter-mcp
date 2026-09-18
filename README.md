@@ -45,10 +45,10 @@ Default ports (set in the `appsettings.json` next to the exe):
 
 | Server | Port | Talks to | Key in config |
 |---|---|---|---|
-| `MCP.ProjectMaker` | **6207** | PM PublicApi `:5299` | `NeuroBot:ApiKey` |
+| `MCP.ProjectMaker` | **6207** | PM PublicApi `:5299` | `ProjectMaker:ApiKey` |
 | `MCP.Instance` (Target=projectmaker) | **6208** | PM PublicApi `:5299` | `Instance:ApiKey` |
 | `MCP.Instance` (Target=zennoposter) | **6209** (convention, set explicitly) | ZP PublicApi `:5300` | `Instance:ApiKey` |
-| `MCP.ZennoPoster` | **6210** | ZP PublicApi `:5300` | `ZennoPosterApi:ApiKey` |
+| `MCP.ZennoPoster` | **6210** | ZP PublicApi `:5300` | `ZennoPoster:ApiKey` |
 | `MCP.Android` (ZennoDroid) | **6211** | ZDroid PublicApi `:5309` | `Android:ApiKey` |
 
 The product API those servers call listens on different ports in the two products:
@@ -63,7 +63,7 @@ The defaults above and the examples below use the ZennoPoster ports; on ZennoDro
 
 Everything can be overridden through standard ASP.NET Core configuration: the
 `appsettings.json` next to the exe, environment variables (`ASPNETCORE_URLS`,
-`NeuroBot__ApiKey`, …) or command-line arguments (`--urls`, `--NeuroBot:ApiKey=…`, …) —
+`ProjectMaker__ApiKey`, …) or command-line arguments (`--urls`, `--ProjectMaker:ApiKey=…`, …) —
 arguments override environment variables, environment variables override
 `appsettings.json`.
 
@@ -95,7 +95,7 @@ variables / arguments:
 
 ```powershell
 # ProjectMaker (editor): 6207 -> :5299
-.\ZennoLab.AI.MCP.ProjectMaker.exe --NeuroBot:ApiKey=zp_xxx
+.\ZennoLab.AI.MCP.ProjectMaker.exe --ProjectMaker:ApiKey=zp_xxx
 
 # Instance for the editor (PM browser): 6208 -> :5299
 .\ZennoLab.AI.MCP.Instance.exe --Instance:ApiKey=zp_xxx
@@ -106,7 +106,7 @@ variables / arguments:
   --Instance:ApiKey=zp_xxx
 
 # ZennoPoster (runner tasks/sessions): 6210 -> :5300
-.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPosterApi:ApiKey=zp_xxx
+.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:ApiKey=zp_xxx
 
 # Android (ZennoDroid device): 6211 -> :5309
 .\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
@@ -189,14 +189,15 @@ ZennoDroid:
 
 ```powershell
 # ProjectMaker API on 5309 instead of 5299
-.\ZennoLab.AI.MCP.ProjectMaker.exe --NeuroBot:BaseUrl=http://localhost:5309/api/v1 --NeuroBot:ApiKey=zp_xxx
+.\ZennoLab.AI.MCP.ProjectMaker.exe --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 --ProjectMaker:ApiKey=zp_xxx
 
 # ZennoPoster API on 5310 instead of 5300
-.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPosterApi:BaseUrl=http://localhost:5310/api/v1 --ZennoPosterApi:ApiKey=zp_xxx
+.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:BaseUrl=http://localhost:5310/api/v1 --ZennoPoster:ApiKey=zp_xxx
 ```
 
-The section name differs per server: `NeuroBot` for `MCP.ProjectMaker`, `Instance` for
-`MCP.Instance`, `ZennoPosterApi` for `MCP.ZennoPoster`, `Android` for `MCP.Android`.
+The section is named after the server: `ProjectMaker`, `Instance`, `ZennoPoster`, `Android`.
+Versions up to 0.3.0 of `MCP.ProjectMaker` and `MCP.ZennoPoster` used `NeuroBot` and `ZennoPosterApi`;
+those names still work in later versions and the server logs a warning at startup.
 
 ## License
 
