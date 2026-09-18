@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "zennoposter-mcp",
-      "source": "plugins/zennoposter",
+      "source": ".",
       "description": "ZennoPoster: edit ProjectMaker projects, run and monitor tasks, drive the browser. Requires ZennoPoster 7.9.2+ on Windows."
     },
     {
