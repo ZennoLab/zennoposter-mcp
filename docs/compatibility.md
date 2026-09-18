@@ -22,6 +22,7 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.4.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.3.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.2.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 
@@ -29,6 +30,7 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.4.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.3.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.2.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 
