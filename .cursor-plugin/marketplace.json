@@ -1,0 +1,21 @@
+{
+  "name": "zennolab-mcp",
+  "owner": {
+    "name": "ZennoLab"
+  },
+  "metadata": {
+    "description": "Official MCP servers for ZennoPoster and ZennoDroid"
+  },
+  "plugins": [
+    {
+      "name": "zennoposter-mcp",
+      "source": "plugins/zennoposter",
+      "description": "ZennoPoster: edit ProjectMaker projects, run and monitor tasks, drive the browser. Requires ZennoPoster 7.9.2+ on Windows."
+    },
+    {
+      "name": "zennodroid-mcp",
+      "source": "plugins/zennodroid",
+      "description": "ZennoDroid: edit projects, run and monitor tasks, control Android devices. Requires ZennoDroid 2.6.1+ on Windows."
+    }
+  ]
+}
