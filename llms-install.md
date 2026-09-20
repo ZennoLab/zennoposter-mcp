@@ -30,7 +30,8 @@ Install only what the task requires. If unsure, start with **MCP.ProjectMaker**.
 | Drive the browser opened inside ProjectMaker | MCP.Instance | 6208 | ZennoPoster only |
 | Drive the browser inside ZennoPoster tasks | MCP.Instance (second copy) | 6209 | ZennoPoster only |
 | Manage tasks: run, threads, stop, logs | MCP.ZennoPoster | 6210 | both products |
-| Control Android devices | MCP.Android | 6211 | ZennoDroid only |
+| Control the device attached to ProjectMaker | MCP.Android | 6211 | ZennoDroid only |
+| Control the devices of running tasks | MCP.Android (second copy) | 6212 | ZennoDroid only |
 
 On ZennoDroid the two servers that serve both products listen `+10` higher - MCP.ProjectMaker on
 **6217** and MCP.ZennoPoster on **6220** - so a machine with both products can run both sets at once.
@@ -78,8 +79,16 @@ Run from the folder with the unpacked server, substituting the user's key for `z
 # ZennoPoster tasks, port 6210
 .\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:ApiKey=zp_xxx
 
-# Android via ZennoDroid, port 6211
+# Android device attached to ProjectMaker, port 6211
 .\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
+```
+
+The devices of running tasks are a second copy of the Android server, exactly as the browser inside
+tasks is a second copy of the Instance server:
+
+```powershell
+.\ZennoLab.AI.MCP.Android.exe --urls http://localhost:6212 `
+  --Android:BaseUrl=http://localhost:5310/api/v1 --Android:ApiKey=zp_xxx
 ```
 
 The browser inside ZennoPoster tasks (port 6209) is a second copy of the Instance server,
@@ -150,8 +159,9 @@ in one client:
 {
   "servers": {
     "projectmaker-droid": { "type": "http", "url": "http://localhost:6217" },
-    "zennoposter-droid": { "type": "http", "url": "http://localhost:6220" },
-    "android": { "type": "http", "url": "http://localhost:6211" }
+    "zennodroid": { "type": "http", "url": "http://localhost:6220" },
+    "android-pm": { "type": "http", "url": "http://localhost:6211" },
+    "android-zd": { "type": "http", "url": "http://localhost:6212" }
   }
 }
 ```

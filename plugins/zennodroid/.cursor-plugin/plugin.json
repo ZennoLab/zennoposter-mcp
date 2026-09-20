@@ -2,7 +2,7 @@
   "name": "zennodroid-mcp",
   "displayName": "ZennoDroid MCP",
   "version": "1.0.0",
-  "description": "Official MCP servers for ZennoDroid: edit projects, run and monitor tasks, control Android devices. Windows only; every server runs on your machine and is authorized by an API key you issue in the product. ZennoDroid's product API and MCP ports are the ZennoPoster ones shifted by +10, so start MCP.ProjectMaker with --urls http://localhost:6217 --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 and MCP.ZennoPoster with --urls http://localhost:6220 --ZennoPoster:BaseUrl=http://localhost:5310/api/v1; MCP.Android is ZennoDroid-only and needs neither.",
+  "description": "Official MCP servers for ZennoDroid: edit projects, run and monitor tasks, control Android devices. Windows only; every server runs on your machine and is authorized by an API key you issue in the product. ZennoDroid's product API and MCP ports are the ZennoPoster ones shifted by +10, so start MCP.ProjectMaker with --urls http://localhost:6217 --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 and MCP.ZennoPoster with --urls http://localhost:6220 --ZennoPoster:BaseUrl=http://localhost:5310/api/v1. MCP.Android runs twice, like MCP.Instance does on ZennoPoster: the shipped default (6211) drives the device attached to ProjectMaker, and a second copy on 6212 with --Android:BaseUrl=http://localhost:5310/api/v1 drives the devices of running tasks.",
   "author": {
     "name": "ZennoLab",
     "url": "https://zennolab.com"

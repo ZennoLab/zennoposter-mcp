@@ -52,7 +52,8 @@ MCP-серверы публикуются как self-contained `win-x64` бин
 | `MCP.Instance` (Target=projectmaker) | **6208** | PM PublicApi `:5299` | `Instance:ApiKey` |
 | `MCP.Instance` (Target=zennoposter) | **6209** (конвенция, задать явно) | ZP PublicApi `:5300` | `Instance:ApiKey` |
 | `MCP.ZennoPoster` | **6210** | ZP PublicApi `:5300` | `ZennoPoster:ApiKey` |
-| `MCP.Android` (ZennoDroid) | **6211** | ZDroid PublicApi `:5309` | `Android:ApiKey` |
+| `MCP.Android` (ZennoDroid, устройство редактора) | **6211** | PM PublicApi ZDroid `:5309` | `Android:ApiKey` |
+| `MCP.Android` (ZennoDroid, устройства задач) | **6212** (по соглашению, задаётся явно) | ZP PublicApi ZDroid `:5310` | `Android:ApiKey` |
 
 API продукта, в который ходят эти серверы, слушает в двух продуктах на разных портах:
 
@@ -68,7 +69,8 @@ API продукта, в который ходят эти серверы, слу
 |---|---|---|---|
 | `MCP.ProjectMaker` | **6217** (задаётся явно) | PM PublicApi ZDroid `:5309` | `ProjectMaker:ApiKey` |
 | `MCP.ZennoPoster` | **6220** (задаётся явно) | ZP PublicApi ZDroid `:5310` | `ZennoPoster:ApiKey` |
-| `MCP.Android` | **6211** | PublicApi ZDroid `:5309` | `Android:ApiKey` |
+| `MCP.Android` (устройство редактора) | **6211** | PM PublicApi ZDroid `:5309` | `Android:ApiKey` |
+| `MCP.Android` (устройства задач) | **6212** (задаётся явно) | ZP PublicApi ZDroid `:5310` | `Android:ApiKey` |
 
 Всё переопределяется штатной конфигурацией ASP.NET Core: `appsettings.json` рядом с exe,
 переменные окружения (`ASPNETCORE_URLS`, `ProjectMaker__ApiKey`, …) или аргументы командной
@@ -115,8 +117,29 @@ API продукта, в который ходят эти серверы, слу
 # ZennoPoster (задачи/сессии раннера): 6210 -> :5300
 .\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:ApiKey=zp_xxx
 
-# Android (устройство ZennoDroid): 6211 -> :5309
+# Android (устройство, подключённое к ProjectMaker): 6211 -> :5309
 .\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
+
+# Android для раннера — ВТОРАЯ копия того же exe, устройства выполняющихся задач
+.\ZennoLab.AI.MCP.Android.exe --urls http://localhost:6212 `
+  --Android:BaseUrl=http://localhost:5310/api/v1 --Android:ApiKey=zp_xxx
+```
+
+`MCP.Android` монтируется дважды по той же причине, что и `MCP.Instance` на ZennoPoster: домен
+Android обслуживают оба хоста — PublicApi ProjectMaker (устройство, которое вы видите в редакторе)
+и PublicApi раннера (устройства, которыми управляют его задачи). В отличие от `MCP.Instance`
+переключателя `Target` у него нет, поэтому копии различаются только `--urls` и `BaseUrl`.
+
+На ZennoDroid те же два exe запускаются на сдвинутых портах и направляются в API ZennoDroid:
+
+```powershell
+# ProjectMaker на ZennoDroid: 6217 -> :5309
+.\ZennoLab.AI.MCP.ProjectMaker.exe --urls http://localhost:6217 `
+  --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 --ProjectMaker:ApiKey=zp_xxx
+
+# Задачи ZennoPoster на ZennoDroid: 6220 -> :5310
+.\ZennoLab.AI.MCP.ZennoPoster.exe --urls http://localhost:6220 `
+  --ZennoPoster:BaseUrl=http://localhost:5310/api/v1 --ZennoPoster:ApiKey=zp_xxx
 ```
 
 **Важно про два экземпляра `MCP.Instance`**: у сервера Instance `Target` (какие инструкции
@@ -156,8 +179,31 @@ HTTP-запросы) — задаются только вместе, как па
 }
 ```
 
-На ZennoDroid записи будут `projectmaker`, `zennoposter` и `android` (порт 6211); монтирования
-`instance-*` там нет.
+На ZennoDroid записи такие — имена отличаются, поэтому оба продукта настраиваются в одном
+клиенте, а монтирования `instance-*` там нет:
+
+```json
+{
+  "servers": {
+    "projectmaker-droid": {
+      "type": "http",
+      "url": "http://localhost:6217"
+    },
+    "zennodroid": {
+      "type": "http",
+      "url": "http://localhost:6220"
+    },
+    "android-pm": {
+      "type": "http",
+      "url": "http://localhost:6211"
+    },
+    "android-zd": {
+      "type": "http",
+      "url": "http://localhost:6212"
+    }
+  }
+}
+```
 
 Авторизация на этом плече не нужна: MCP-серверы слушают только loopback, а права
 определяются ключом, с которым запущен сам сервер (шаг 3).
@@ -187,7 +233,7 @@ $env:ASPNETCORE_URLS = "http://localhost:7207"
 или `"Urls": "http://localhost:7207"` в `appsettings.json` рядом с exe. После смены порта поправьте
 соответствующий URL в конфигурации клиента из шага 4.
 
-Не занимайте **6107–6113**: это порты встроенных серверов продукта, чужой процесс на любом из них
+Не занимайте **6107–6113** (**6117–6123** на ZennoDroid): это порты встроенных серверов продукта, чужой процесс на любом из них
 не даст встроенному серверу стартовать.
 
 **Порт API продукта.** Задаётся в `BaseUrl` секции этого сервера — именно это меняется на

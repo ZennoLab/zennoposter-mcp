@@ -20,7 +20,8 @@ body:
         - MCP.Instance, ProjectMaker target (6208)
         - MCP.Instance, ZennoPoster target (6209)
         - MCP.ZennoPoster (6210, ZennoDroid 6220)
-        - MCP.Android (6211)
+        - MCP.Android, ProjectMaker target (6211)
+        - MCP.Android, ZennoPoster target (6212)
     validations:
       required: true
 

@@ -54,7 +54,8 @@ Default ports (set in the `appsettings.json` next to the exe):
 | `MCP.Instance` (Target=projectmaker) | **6208** | PM PublicApi `:5299` | `Instance:ApiKey` |
 | `MCP.Instance` (Target=zennoposter) | **6209** (convention, set explicitly) | ZP PublicApi `:5300` | `Instance:ApiKey` |
 | `MCP.ZennoPoster` | **6210** | ZP PublicApi `:5300` | `ZennoPoster:ApiKey` |
-| `MCP.Android` (ZennoDroid) | **6211** | ZDroid PublicApi `:5309` | `Android:ApiKey` |
+| `MCP.Android` (ZennoDroid, editor device) | **6211** | ZDroid PM PublicApi `:5309` | `Android:ApiKey` |
+| `MCP.Android` (ZennoDroid, task devices) | **6212** (convention, set explicitly) | ZDroid ZP PublicApi `:5310` | `Android:ApiKey` |
 
 The product API those servers call listens on different ports in the two products:
 
@@ -70,7 +71,8 @@ its listen port and its `BaseUrl` set explicitly:
 |---|---|---|---|
 | `MCP.ProjectMaker` | **6217** (set explicitly) | ZDroid PM PublicApi `:5309` | `ProjectMaker:ApiKey` |
 | `MCP.ZennoPoster` | **6220** (set explicitly) | ZDroid ZP PublicApi `:5310` | `ZennoPoster:ApiKey` |
-| `MCP.Android` | **6211** | ZDroid PublicApi `:5309` | `Android:ApiKey` |
+| `MCP.Android` (editor device) | **6211** | ZDroid PM PublicApi `:5309` | `Android:ApiKey` |
+| `MCP.Android` (task devices) | **6212** (set explicitly) | ZDroid ZP PublicApi `:5310` | `Android:ApiKey` |
 
 Everything can be overridden through standard ASP.NET Core configuration: the
 `appsettings.json` next to the exe, environment variables (`ASPNETCORE_URLS`,
@@ -119,9 +121,18 @@ variables / arguments:
 # ZennoPoster (runner tasks/sessions): 6210 -> :5300
 .\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:ApiKey=zp_xxx
 
-# Android (ZennoDroid device): 6211 -> :5309
+# Android (the device attached to ProjectMaker): 6211 -> :5309
 .\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
+
+# Android for the runner — a SECOND copy of the same exe, for the devices of running tasks
+.\ZennoLab.AI.MCP.Android.exe --urls http://localhost:6212 `
+  --Android:BaseUrl=http://localhost:5310/api/v1 --Android:ApiKey=zp_xxx
 ```
+
+`MCP.Android` mounts twice for the same reason `MCP.Instance` does on ZennoPoster: the Android
+domain is served both by ProjectMaker's PublicApi (the device you see in the editor) and by the
+runner's (the devices its tasks are driving). Unlike `MCP.Instance` it has no `Target`, so the two
+copies differ only by `--urls` and `BaseUrl`.
 
 On ZennoDroid, the same two executables are started on the shifted ports and pointed at the
 ZennoDroid API:
@@ -184,13 +195,17 @@ client, and no `instance-*` mount, which ZennoDroid does not have:
       "type": "http",
       "url": "http://localhost:6217"
     },
-    "zennoposter-droid": {
+    "zennodroid": {
       "type": "http",
       "url": "http://localhost:6220"
     },
-    "android": {
+    "android-pm": {
       "type": "http",
       "url": "http://localhost:6211"
+    },
+    "android-zd": {
+      "type": "http",
+      "url": "http://localhost:6212"
     }
   }
 }

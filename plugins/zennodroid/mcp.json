@@ -5,13 +5,17 @@
       "type": "streamable-http",
       "url": "http://localhost:6217"
     },
-    "zennoposter-droid": {
+    "zennodroid": {
       "type": "streamable-http",
       "url": "http://localhost:6220"
     },
-    "android": {
+    "android-pm": {
       "type": "streamable-http",
       "url": "http://localhost:6211"
+    },
+    "android-zd": {
+      "type": "streamable-http",
+      "url": "http://localhost:6212"
     }
   }
 }
