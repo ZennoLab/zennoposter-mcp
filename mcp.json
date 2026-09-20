@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "projectmaker": {
+      "type": "streamable-http",
+      "url": "http://localhost:6207"
+    },
+    "instance-pm": {
+      "type": "streamable-http",
+      "url": "http://localhost:6208"
+    },
+    "instance-zp": {
+      "type": "streamable-http",
+      "url": "http://localhost:6209"
+    },
+    "zennoposter": {
+      "type": "streamable-http",
+      "url": "http://localhost:6210"
+    }
+  }
+}

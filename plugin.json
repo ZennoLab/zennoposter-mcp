@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "zennoposter-mcp",
+  "version": "1.0.0",
+  "description": "Official MCP servers for ZennoPoster: read and edit ProjectMaker projects, run and monitor tasks, drive the browser in ProjectMaker and in running tasks. Requires ZennoPoster 7.9.2+ on Windows. The servers are local executables: download them from the repository releases and start each one with an API key before connecting.",
+  "author": {
+    "name": "ZennoLab",
+    "url": "https://zennolab.com"
+  },
+  "homepage": "https://zennolab.github.io/zennoposter-mcp/",
+  "repository": "https://github.com/ZennoLab/zennoposter-mcp",
+  "license": "MIT",
+  "keywords": ["mcp", "zennoposter", "projectmaker", "browser-automation", "windows"]
+}

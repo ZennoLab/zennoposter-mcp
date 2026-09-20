@@ -1,0 +1,77 @@
+name: Bug report
+description: Something does not work with an MCP server
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: the servers require ZennoPoster 7.9.2+ (or ZennoDroid 2.6.1+) on Windows,
+        and the product must be running. See the [README](https://github.com/ZennoLab/zennoposter-mcp#readme).
+
+        Do not report security vulnerabilities here. Use
+        [private vulnerability reporting](https://github.com/ZennoLab/zennoposter-mcp/security/advisories/new) instead.
+
+  - type: dropdown
+    id: server
+    attributes:
+      label: Which server
+      options:
+        - MCP.ProjectMaker (6207)
+        - MCP.Instance, ProjectMaker target (6208)
+        - MCP.Instance, ZennoPoster target (6209)
+        - MCP.ZennoPoster (6210)
+        - MCP.Android (6211)
+    validations:
+      required: true
+
+  - type: input
+    id: server_version
+    attributes:
+      label: Server version
+      placeholder: "0.4.0"
+    validations:
+      required: true
+
+  - type: input
+    id: product_version
+    attributes:
+      label: Product and version
+      placeholder: "ZennoPoster 7.9.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: client
+    attributes:
+      label: MCP client
+      placeholder: "Claude Code / Cursor / VS Code / LM Studio, with version"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened
+      description: What you expected and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Started the server with ...
+        2. Asked the assistant to ...
+        3. Got ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: server_output
+    attributes:
+      label: Server console output
+      description: Output from the MCP server window, including any error text. Remove your API key before pasting.
+      render: text
+    validations:
+      required: false
