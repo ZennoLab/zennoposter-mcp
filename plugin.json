@@ -10,5 +10,13 @@
   "homepage": "https://zennolab.github.io/zennoposter-mcp/",
   "repository": "https://github.com/ZennoLab/zennoposter-mcp",
   "license": "MIT",
-  "keywords": ["mcp", "zennoposter", "projectmaker", "browser-automation", "windows"]
+  "keywords": [
+    "mcp",
+    "zennoposter",
+    "projectmaker",
+    "browser-automation",
+    "windows",
+    "ai-agents",
+    "automation"
+  ]
 }

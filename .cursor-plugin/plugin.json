@@ -2,7 +2,7 @@
   "name": "zennoposter-mcp",
   "displayName": "ZennoPoster MCP",
   "version": "1.0.0",
-  "description": "Official MCP servers for ZennoPoster and ZennoDroid: edit automation projects, run and monitor tasks, drive browser instances and Android devices. Windows only; every server runs on your machine and is authorized by an API key you issue in the product.",
+  "description": "Official MCP servers for ZennoPoster and ZennoDroid: edit automation projects, run and monitor tasks, drive browser instances and Android devices. Requires ZennoPoster 7.9.2+ or ZennoDroid 2.6.1+ on Windows. Every server runs on your machine and has to be started before a client can connect; what it may do is bounded by the scopes and the permission tier of the API key you issue in the product.",
   "author": {
     "name": "ZennoLab",
     "url": "https://zennolab.com"
@@ -11,5 +11,14 @@
   "repository": "https://github.com/ZennoLab/zennoposter-mcp",
   "license": "MIT",
   "logo": "assets/icon.png",
-  "keywords": ["mcp", "zennoposter", "zennodroid", "projectmaker", "browser-automation", "windows"]
+  "keywords": [
+    "mcp",
+    "zennoposter",
+    "zennodroid",
+    "projectmaker",
+    "browser-automation",
+    "windows",
+    "ai-agents",
+    "automation"
+  ]
 }
