@@ -15,7 +15,7 @@
     {
       "name": "zennodroid-mcp",
       "source": "plugins/zennodroid",
-      "description": "ZennoDroid: edit projects, run and monitor tasks, control Android devices. Requires ZennoDroid 2.6.1+ on Windows."
+      "description": "ZennoDroid: edit projects, run and monitor tasks, control Android devices. Requires ZennoDroid 2.6.1+ on Windows; its servers run on the ZennoPoster ports shifted by +10 (6217 / 6220, API 5309 / 5310)."
     }
   ]
 }

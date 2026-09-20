@@ -16,10 +16,10 @@ body:
     attributes:
       label: Which server
       options:
-        - MCP.ProjectMaker (6207)
+        - MCP.ProjectMaker (6207, ZennoDroid 6217)
         - MCP.Instance, ProjectMaker target (6208)
         - MCP.Instance, ZennoPoster target (6209)
-        - MCP.ZennoPoster (6210)
+        - MCP.ZennoPoster (6210, ZennoDroid 6220)
         - MCP.Android (6211)
     validations:
       required: true

@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "zennodroid-mcp",
   "version": "1.0.0",
-  "description": "Official MCP servers for ZennoDroid: read and edit projects, run and monitor tasks, control Android devices. Requires ZennoDroid 2.6.1+ on Windows. The servers are local executables: download them from the repository releases and start each one with an API key before connecting.",
+  "description": "Official MCP servers for ZennoDroid: read and edit projects, run and monitor tasks, control Android devices. Requires ZennoDroid 2.6.1+ on Windows. The servers are local executables: download them from the repository releases and start each one with an API key before connecting. ZennoDroid's product API and MCP ports are the ZennoPoster ones shifted by +10, so start MCP.ProjectMaker with --urls http://localhost:6217 --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 and MCP.ZennoPoster with --urls http://localhost:6220 --ZennoPoster:BaseUrl=http://localhost:5310/api/v1; MCP.Android is ZennoDroid-only and needs neither.",
   "author": {
     "name": "ZennoLab",
     "url": "https://zennolab.com"
@@ -10,5 +10,11 @@
   "homepage": "https://zennolab.github.io/zennoposter-mcp/",
   "repository": "https://github.com/ZennoLab/zennoposter-mcp",
   "license": "MIT",
-  "keywords": ["mcp", "zennodroid", "android", "automation", "windows"]
+  "keywords": [
+    "mcp",
+    "zennodroid",
+    "android",
+    "automation",
+    "windows"
+  ]
 }

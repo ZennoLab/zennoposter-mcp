@@ -41,6 +41,11 @@ PublicApi (`:5299` ProjectMaker / `:5300` ZennoPoster), but with **your** ApiKey
 scopes/tier you chose when issuing the key. Both copies run side by side without
 interfering with each other.
 
+On **ZennoDroid** the two servers that serve both products listen `+10` higher — `MCP.ProjectMaker`
+on **6217**, `MCP.ZennoPoster` on **6220** — the same shift the product applies to its internal band.
+That way a machine with both products installed can run both sets at once. `MCP.Android` exists only
+on ZennoDroid and keeps **6211**: nothing on ZennoPoster occupies it.
+
 Default ports (set in the `appsettings.json` next to the exe):
 
 | Server | Port | Talks to | Key in config |
@@ -58,8 +63,14 @@ The product API those servers call listens on different ports in the two product
 | ProjectMaker | 5299 | 5309 |
 | ZennoPoster | 5300 | 5310 |
 
-The defaults above and the examples below use the ZennoPoster ports; on ZennoDroid set each server's
-`BaseUrl` to the ZennoDroid column, as shown in "Changing ports".
+The defaults above and the examples below are for ZennoPoster. On ZennoDroid each server needs both
+its listen port and its `BaseUrl` set explicitly:
+
+| Server | Port | Talks to | Key in config |
+|---|---|---|---|
+| `MCP.ProjectMaker` | **6217** (set explicitly) | ZDroid PM PublicApi `:5309` | `ProjectMaker:ApiKey` |
+| `MCP.ZennoPoster` | **6220** (set explicitly) | ZDroid ZP PublicApi `:5310` | `ZennoPoster:ApiKey` |
+| `MCP.Android` | **6211** | ZDroid PublicApi `:5309` | `Android:ApiKey` |
 
 Everything can be overridden through standard ASP.NET Core configuration: the
 `appsettings.json` next to the exe, environment variables (`ASPNETCORE_URLS`,
@@ -112,6 +123,19 @@ variables / arguments:
 .\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
 ```
 
+On ZennoDroid, the same two executables are started on the shifted ports and pointed at the
+ZennoDroid API:
+
+```powershell
+# ProjectMaker on ZennoDroid: 6217 -> :5309
+.\ZennoLab.AI.MCP.ProjectMaker.exe --urls http://localhost:6217 `
+  --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 --ProjectMaker:ApiKey=zp_xxx
+
+# ZennoPoster tasks on ZennoDroid: 6220 -> :5310
+.\ZennoLab.AI.MCP.ZennoPoster.exe --urls http://localhost:6220 `
+  --ZennoPoster:BaseUrl=http://localhost:5310/api/v1 --ZennoPoster:ApiKey=zp_xxx
+```
+
 **Important note on the two `MCP.Instance` copies**: for the Instance server, `Target`
 (which instructions it serves to the AI — about ProjectMaker or about ZennoPoster) and
 `BaseUrl` (where HTTP requests actually go) are configured only together, as a pair, and
@@ -150,8 +174,27 @@ equivalent for your MCP client if needed):
 }
 ```
 
-On ZennoDroid the entries are `projectmaker`, `zennoposter` and `android` (port 6211); there is no
-`instance-*` mount there.
+On ZennoDroid the entries are these — different names, so both products can be configured in one
+client, and no `instance-*` mount, which ZennoDroid does not have:
+
+```json
+{
+  "servers": {
+    "projectmaker-droid": {
+      "type": "http",
+      "url": "http://localhost:6217"
+    },
+    "zennoposter-droid": {
+      "type": "http",
+      "url": "http://localhost:6220"
+    },
+    "android": {
+      "type": "http",
+      "url": "http://localhost:6211"
+    }
+  }
+}
+```
 
 No authorization is needed on this leg: the MCP servers listen on loopback only, and the
 permissions are defined by the key the server itself was started with (step 3).
@@ -181,8 +224,8 @@ $env:ASPNETCORE_URLS = "http://localhost:7207"
 or `"Urls": "http://localhost:7207"` in the `appsettings.json` next to the exe. After moving a
 listen port, update the matching URL in the client configuration from step 4.
 
-Stay off **6107–6113**: those belong to the product's built-in servers, and a foreign process on one
-of them prevents the built-in server from starting.
+Stay off **6107–6113** (**6117–6123** on ZennoDroid): those belong to the product's built-in servers,
+and a foreign process on one of them prevents the built-in server from starting.
 
 **Product API port.** Set the `BaseUrl` of that server's own section — this is what you change on
 ZennoDroid:

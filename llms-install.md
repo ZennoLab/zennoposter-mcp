@@ -32,6 +32,10 @@ Install only what the task requires. If unsure, start with **MCP.ProjectMaker**.
 | Manage tasks: run, threads, stop, logs | MCP.ZennoPoster | 6210 | both products |
 | Control Android devices | MCP.Android | 6211 | ZennoDroid only |
 
+On ZennoDroid the two servers that serve both products listen `+10` higher - MCP.ProjectMaker on
+**6217** and MCP.ZennoPoster on **6220** - so a machine with both products can run both sets at once.
+MCP.Android keeps 6211; nothing on ZennoPoster uses that port.
+
 Do not bind anything to ports **6107-6113**: that band belongs to the product's own internal MCP
 infrastructure, and a foreign process there stops the built-in AI chat from starting.
 
@@ -87,11 +91,21 @@ unpacked into a separate folder and started with `Target` and `BaseUrl` set toge
   --Instance:ApiKey=zp_xxx
 ```
 
-**On ZennoDroid the product API ports are shifted by +10** (ProjectMaker 5309, ZennoPoster 5310),
-so each server needs its `BaseUrl` pointed there — the defaults above are the ZennoPoster ports:
+**On ZennoDroid everything shifts by +10**: the product API (ProjectMaker 5309, ZennoPoster 5310)
+and the two servers that serve both products. The commands above are the ZennoPoster ones; on
+ZennoDroid start these instead, with both the listen port and the `BaseUrl` set explicitly:
 
 ```powershell
-.\ZennoLab.AI.MCP.ProjectMaker.exe --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 --ProjectMaker:ApiKey=zp_xxx
+# ProjectMaker on ZennoDroid: 6217 -> :5309
+.\ZennoLab.AI.MCP.ProjectMaker.exe --urls http://localhost:6217 `
+  --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 --ProjectMaker:ApiKey=zp_xxx
+
+# ZennoPoster tasks on ZennoDroid: 6220 -> :5310
+.\ZennoLab.AI.MCP.ZennoPoster.exe --urls http://localhost:6220 `
+  --ZennoPoster:BaseUrl=http://localhost:5310/api/v1 --ZennoPoster:ApiKey=zp_xxx
+
+# Android: no shift needed, ZennoDroid-only server
+.\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
 ```
 
 The config section is named after the server: `ProjectMaker`, `Instance`, `ZennoPoster`,
@@ -125,6 +139,19 @@ Cline, Cursor, VS Code, GitHub Copilot and other clients that use `mcp.json`:
   "servers": {
     "projectmaker": { "type": "http", "url": "http://localhost:6207" },
     "zennoposter": { "type": "http", "url": "http://localhost:6210" }
+  }
+}
+```
+
+On ZennoDroid, with the shifted ports and names of their own, so both products can be configured
+in one client:
+
+```json
+{
+  "servers": {
+    "projectmaker-droid": { "type": "http", "url": "http://localhost:6217" },
+    "zennoposter-droid": { "type": "http", "url": "http://localhost:6220" },
+    "android": { "type": "http", "url": "http://localhost:6211" }
   }
 }
 ```
