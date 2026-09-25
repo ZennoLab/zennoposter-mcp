@@ -4,7 +4,7 @@ This file tells an AI assistant how to install and connect the ZennoPoster / Zen
 servers. Read it fully before acting. Steps that only a human can perform are marked.
 
 This is the short path. The full picture — why the product runs its own internal MCP servers,
-how the two `MCP.Instance` copies differ, every configuration override — is in the
+how the two `MCP.Instance` and `MCP.Android` copies differ, every configuration override — is in the
 [README](https://github.com/ZennoLab/zennoposter-mcp#readme).
 
 ## 0. Check the prerequisites first
@@ -22,33 +22,43 @@ If any of these is not satisfied, stop and say what is missing. Do not work arou
 
 ## 1. Pick the servers you need
 
-Install only what the task requires. If unsure, start with **MCP.ProjectMaker**.
+Install only what the task requires. If unsure, start with **MCP.ProjectMaker**. The servers and
+ports depend on the product found in step 0.
 
-| Task | Server | Port | Works with |
-|---|---|---|---|
-| Read and edit a project: actions, connections, variables, lists, tables | MCP.ProjectMaker | 6207 | both products |
-| Drive the browser opened inside ProjectMaker | MCP.Instance | 6208 | ZennoPoster only |
-| Drive the browser inside ZennoPoster tasks | MCP.Instance (second copy) | 6209 | ZennoPoster only |
-| Manage tasks: run, threads, stop, logs | MCP.ZennoPoster | 6210 | both products |
-| Control the device attached to ProjectMaker | MCP.Android | 6211 | ZennoDroid only |
-| Control the devices of running tasks | MCP.Android (second copy) | 6212 | ZennoDroid only |
+ZennoPoster:
 
-On ZennoDroid the two servers that serve both products listen `+10` higher - MCP.ProjectMaker on
-**6217** and MCP.ZennoPoster on **6220** - so a machine with both products can run both sets at once.
-MCP.Android keeps 6211; nothing on ZennoPoster uses that port.
+| Task | Server | Port |
+|---|---|---|
+| Read and edit a project: actions, connections, variables, lists, tables | MCP.ProjectMaker | 6207 |
+| Drive the browser opened inside ProjectMaker | MCP.Instance | 6208 |
+| Drive the browser inside ZennoPoster tasks | MCP.Instance (second copy) | 6209 |
+| Manage tasks: run, stop, threads, tries, settings | MCP.ZennoPoster | 6210 |
 
-Do not bind anything to ports **6107-6113**: that band belongs to the product's own internal MCP
-infrastructure, and a foreign process there stops the built-in AI chat from starting.
+ZennoDroid:
+
+| Task | Server | Port |
+|---|---|---|
+| Read and edit a project: actions, connections, variables, lists, tables | MCP.ProjectMaker | 6217 |
+| Manage tasks: run, stop, threads, tries, settings | MCP.ZennoPoster | 6220 |
+| Control the device attached to ProjectMaker | MCP.Android | 6211 |
+| Control the devices of running tasks | MCP.Android (second copy) | 6212 |
+
+The two sets use different ports, so a machine with both products can run both at once.
+
+Do not bind anything to ports **6107-6113** (**6117-6123** on ZennoDroid): that band belongs to the
+product's own internal MCP infrastructure, and a foreign process there stops the built-in AI chat
+from starting.
 
 ## 2. Ask the user to issue an ApiKey — human step
 
 The key cannot be created from the command line. Ask the user to open ProjectMaker,
-**Settings -> API Keys -> Add**, and then:
+**Settings -> Api-Keys -> Add new API key**, and then:
 
 - set a `Label`, for example the name of the AI client being connected;
 - set the `Max tier`: `T0` for read-only, higher to allow modifications;
 - tick the `Scopes` needed; only `*:read` are ticked by default;
-- copy the key immediately — it is shown once and cannot be retrieved later.
+- press **Generate API Key** and copy the key immediately — it is shown once and cannot be
+  retrieved later.
 
 Recommend starting with a `T0` read-only key; once the connection works, the user can issue a
 second key with write permissions. The key looks like `zp_...`. Never print it back in full and
@@ -67,7 +77,10 @@ no .NET runtime installation is needed.
 
 ## 4. Start the server with the key
 
-Run from the folder with the unpacked server, substituting the user's key for `zp_xxx`.
+Run from the folder with the unpacked server, substituting the user's key for `zp_xxx`. Start only
+the servers picked in step 1, from the block of the user's product.
+
+ZennoPoster:
 
 ```powershell
 # ProjectMaker, port 6207
@@ -76,46 +89,40 @@ Run from the folder with the unpacked server, substituting the user's key for `z
 # Browser in ProjectMaker, port 6208
 .\ZennoLab.AI.MCP.Instance.exe --Instance:ApiKey=zp_xxx
 
-# ZennoPoster tasks, port 6210
-.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:ApiKey=zp_xxx
-
-# Android device attached to ProjectMaker, port 6211
-.\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
-```
-
-The devices of running tasks are a second copy of the Android server, exactly as the browser inside
-tasks is a second copy of the Instance server:
-
-```powershell
-.\ZennoLab.AI.MCP.Android.exe --urls http://localhost:6212 `
-  --Android:BaseUrl=http://localhost:5310/api/v1 --Android:ApiKey=zp_xxx
-```
-
-The browser inside ZennoPoster tasks (port 6209) is a second copy of the Instance server,
-unpacked into a separate folder and started with `Target` and `BaseUrl` set together as a pair:
-
-```powershell
+# Browser inside ZennoPoster tasks, port 6209: a second copy of the Instance server
 .\ZennoLab.AI.MCP.Instance.exe --urls http://localhost:6209 `
   --Instance:Target=zennoposter --Instance:BaseUrl=http://localhost:5300/api/v1 `
   --Instance:ApiKey=zp_xxx
+
+# ZennoPoster tasks, port 6210
+.\ZennoLab.AI.MCP.ZennoPoster.exe --ZennoPoster:ApiKey=zp_xxx
 ```
 
-**On ZennoDroid everything shifts by +10**: the product API (ProjectMaker 5309, ZennoPoster 5310)
-and the two servers that serve both products. The commands above are the ZennoPoster ones; on
-ZennoDroid start these instead, with both the listen port and the `BaseUrl` set explicitly:
+ZennoDroid: its API listens on 5309 (ProjectMaker) and 5310 (the runner), and the two servers that
+serve both products need the listen port and `BaseUrl` set explicitly:
 
 ```powershell
-# ProjectMaker on ZennoDroid: 6217 -> :5309
+# ProjectMaker, port 6217
 .\ZennoLab.AI.MCP.ProjectMaker.exe --urls http://localhost:6217 `
   --ProjectMaker:BaseUrl=http://localhost:5309/api/v1 --ProjectMaker:ApiKey=zp_xxx
 
-# ZennoPoster tasks on ZennoDroid: 6220 -> :5310
+# ZennoDroid tasks, port 6220
 .\ZennoLab.AI.MCP.ZennoPoster.exe --urls http://localhost:6220 `
   --ZennoPoster:BaseUrl=http://localhost:5310/api/v1 --ZennoPoster:ApiKey=zp_xxx
 
-# Android: no shift needed, ZennoDroid-only server
+# Android device attached to ProjectMaker, port 6211
 .\ZennoLab.AI.MCP.Android.exe --Android:ApiKey=zp_xxx
+
+# Devices of running tasks, port 6212: a second copy of the Android server
+.\ZennoLab.AI.MCP.Android.exe --urls http://localhost:6212 `
+  --Android:Target=zennoposter --Android:BaseUrl=http://localhost:5310/api/v1 `
+  --Android:ApiKey=zp_xxx
 ```
+
+A second copy is the same exe started once more, with `Target` and `BaseUrl` set together as a
+pair. `Target` selects the instructions the server gives the assistant; for the Android server, one
+editor device whose id may stay 0, or one device per task thread addressed by an id from
+`list_devices`.
 
 The config section is named after the server: `ProjectMaker`, `Instance`, `ZennoPoster`,
 `Android`. Versions up to 0.3.0 of `MCP.ProjectMaker` and `MCP.ZennoPoster` used `NeuroBot` and
@@ -135,13 +142,13 @@ Transport is **streamable HTTP on localhost**, not stdio. There is no npm packag
 `Authorization` header is needed on this leg: the servers listen on loopback only and the
 permissions come from the key the server itself was started with.
 
-Claude Code:
+Claude Code, one command per server:
 
 ```sh
 claude mcp add --transport http projectmaker http://localhost:6207
 ```
 
-Cline, Cursor, VS Code, GitHub Copilot and other clients that use `mcp.json`:
+VS Code and GitHub Copilot read `servers` from `.vscode/mcp.json`:
 
 ```json
 {
@@ -152,8 +159,31 @@ Cline, Cursor, VS Code, GitHub Copilot and other clients that use `mcp.json`:
 }
 ```
 
-On ZennoDroid, with the shifted ports and names of their own, so both products can be configured
-in one client:
+Cursor and LM Studio (0.3.17 or newer) read `mcpServers`, with a `url` per entry:
+
+```json
+{
+  "mcpServers": {
+    "projectmaker": { "url": "http://localhost:6207" },
+    "zennoposter": { "url": "http://localhost:6210" }
+  }
+}
+```
+
+Cline reads `mcpServers` too and needs the transport named: without `"type": "streamableHttp"` it
+falls back to the older SSE transport.
+
+```json
+{
+  "mcpServers": {
+    "projectmaker": { "type": "streamableHttp", "url": "http://localhost:6207" },
+    "zennoposter": { "type": "streamableHttp", "url": "http://localhost:6210" }
+  }
+}
+```
+
+On ZennoDroid the entries have names of their own, so both products can be configured in one
+client. In the VS Code format:
 
 ```json
 {
@@ -166,29 +196,23 @@ in one client:
 }
 ```
 
-LM Studio uses a different key name and needs version 0.3.17 or newer:
-
-```json
-{
-  "mcpServers": {
-    "projectmaker": { "url": "http://localhost:6207" }
-  }
-}
-```
-
-Restart the client after editing the configuration: it is read at startup. One-click install
-buttons for Cursor and VS Code: https://zennolab.github.io/zennoposter-mcp/install.html
+Restart the client after editing the configuration: it is read at startup. Every entry for VS Code,
+Cursor and Claude Code, with one-click install buttons:
+https://zennolab.github.io/zennoposter-mcp/install.html
 
 ## 6. Verify
 
-List the available tools, or call a safe read-only one such as `ping` / `get_product_version`.
-A working ProjectMaker connection also exposes `get_project_structure`. If no tools appear:
+List the available tools, then call a read-only one that needs the key: `get_product_version` on
+MCP.ProjectMaker, `tasks_list` on MCP.ZennoPoster, `list_devices` on MCP.Android, `get_all_tabs` on
+MCP.Instance with a browser open. `ping` answers without checking the key. A working ProjectMaker
+connection also exposes `get_project_structure`. If no tools appear:
 
 - the server process is not running, or
 - the configuration was written for a different client, or
 - the client was not restarted.
 
-Errors come back structured, not as silent failures:
+Errors come back structured, not as silent failures; MCP.Android does so since 0.4.0, earlier
+versions report only that a call failed.
 
 | Code | Meaning | Fix |
 |---|---|---|

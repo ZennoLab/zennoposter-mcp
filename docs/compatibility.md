@@ -11,7 +11,15 @@ serves, and the MCP server binaries you downloaded. This page maps them onto eac
 
 ## Supported combinations
 
-Contract version: **1.2.0**.
+Contract version: **1.3.0**.
+
+An installation serves the newest contract version its build shipped with; `/capabilities` reports
+which one (see below).
+
+| Contract | ZennoPoster | ZennoDroid | What it adds |
+|---|---|---|---|
+| 1.3.0 | 7.9.3.0 and newer | 2.6.1.0 and newer | Good End / Bad End chains in `GET /projects/current/structure` |
+| 1.2.0 | 7.9.2.0 | — | |
 
 Every server release states the minimum product version it works with; a dash means the server does
 not apply to that product. Take the newest row your installed version satisfies — archives of every
@@ -44,6 +52,8 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.4.0 | — | 2.6.1.0 and newer |
+| 0.3.0 | — | 2.6.1.0 and newer |
 | 0.2.0 | — | 2.6.1.0 and newer |
 
 ## API ports

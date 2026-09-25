@@ -308,6 +308,10 @@ List actions (without parameters).
 | `links` | array of object | no | Graph edges — every outgoing branch of every cube. Each ActionLink is a source (ActionId/GroupId) → target (TargetActionId, a bare action id) hop on a branch (OnSuccess/OnError/Default/Case:N); IsImplicit marks the next-in-group OnSuccess fallback. |
 | `startActionId` | string | no | Entry cube the Start block points at, or null when unwired/empty project. |
 | `startGroupId` | string | no | Group of the entry cube, or null when unwired/empty project. |
+| `goodEndActionId` | string | no | First cube of the chain wired after the Good End block, which runs when a cube succeeds with no next cube. null when nothing is wired there: the task simply finishes. |
+| `goodEndGroupId` | string | no | Group of GoodEndActionId, or null. |
+| `badEndActionId` | string | no | First cube of the chain wired after the Bad End block, which runs when a cube fails with an empty OnError branch. null when nothing is wired there: the task simply fails. Bad End itself has no id and no input port, so it is never a link target. |
+| `badEndGroupId` | string | no | Group of BadEndActionId, or null. |
 
 ### `GET /projects/current/diagram`
 

@@ -287,7 +287,7 @@ without one — see below):
 ```json
 {
   "host": "zennoposter",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "productVersion": "7.9.2.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,

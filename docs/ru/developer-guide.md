@@ -198,7 +198,7 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 ```json
 {
   "host": "zennoposter",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "productVersion": "7.9.2.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,
@@ -220,4 +220,4 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 
 `version` — версия контракта, которую обслуживает хост, `productVersion` — сборка продукта за ним, так что один вызов говорит, с чем именно вы общаетесь; пустой `productVersion` означает, что хост его не сообщает. Сопоставление обоих с релизами MCP-серверов — в [compatibility.md](compatibility.md).
 
-<!-- translated-from: developer-guide.md 68bf743503636e25801e828367b54a96a3d9451a -->
+<!-- translated-from: developer-guide.md 8be31f5bd7320dd9c7c89b04e6faf34a7f139a35 -->
