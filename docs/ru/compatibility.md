@@ -46,7 +46,6 @@
 | Версия | ZennoPoster | ZennoDroid |
 |---|---|---|
 | 0.4.0 | — | 2.6.1.0 и новее |
-| 0.3.0 | — | 2.6.1.0 и новее |
 | 0.2.0 | — | 2.6.1.0 и новее |
 
 ## Порты API
@@ -74,4 +73,4 @@ curl -H "Authorization: Bearer <api-key>" http://localhost:5299/api/v1/capabilit
 
 Если `version` из `/capabilities` ниже версии контракта выше, ваша установка старше этой документации — обновите продукт или опирайтесь на тот список операций, который она реально сообщает.
 
-<!-- translated-from: compatibility.md 0cdb7bb41562c7a3c6717454ccf9b37d1283c678 -->
+<!-- translated-from: compatibility.md d355ac3521d9af8eb57a8edd7fdda1ab59999818 -->

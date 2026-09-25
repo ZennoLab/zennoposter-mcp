@@ -150,7 +150,7 @@ runner's (the devices its tasks are driving). Like `MCP.Instance` it takes a `Ta
 instructions the server hands to the AI at initialize (one device whose id may be left at 0, versus
 one device per worker thread with the id taken from `list_devices`); the tool set is the same
 either way. `Target` and `BaseUrl` are set together as a pair, exactly as for `MCP.Instance` (see
-the note below). `Target` appeared in `MCP.Android` 0.3.0; earlier versions differ only by `--urls`
+the note below). `Target` appeared in `MCP.Android` 0.4.0; earlier versions differ only by `--urls`
 and `BaseUrl`.
 
 **Important note on the two copies of `MCP.Instance` and of `MCP.Android`**: for these servers,

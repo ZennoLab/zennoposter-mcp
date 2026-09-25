@@ -2363,7 +2363,7 @@
                           }
                         }
                       },
-                      "description": "What was already at the requested \u0027x\u0027/\u0027y\u0027, when the add was refused because a new group would have overlapped it. This never appears in a 200: a refusal is a 409, and the host carries these into the error body\u0027s layoutConflicts."
+                      "description": "What the layout could not accommodate, on either outcome. When the add was refused because a new group would have overlapped whatever is at the requested \u0027x\u0027/\u0027y\u0027, the refusal is a 409 and the host carries these into the error body\u0027s layoutConflicts. When the add went through, these say the cube is in place but the groups below could not all be moved down to clear the frame it grew, so their spacing is left to the caller. Null when there is nothing to report, which is the normal 200."
                     }
                   }
                 }

@@ -53,7 +53,6 @@ release stay on the
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
 | 0.4.0 | — | 2.6.1.0 and newer |
-| 0.3.0 | — | 2.6.1.0 and newer |
 | 0.2.0 | — | 2.6.1.0 and newer |
 
 ## API ports

@@ -413,7 +413,7 @@ Add an action (OwnCode/CSharp category requires code:author, T3).
 | `actionId` | string | no | Id assigned to the newly created action. |
 | `groupId` | string | no | Id of the group the action was placed into. |
 | `validationErrors` | array of object | no | Per-parameter validation failures when the input was rejected (ResultCode RESULT_INVALID_PARAMS); null on success. |
-| `layoutConflicts` | array of object | no | What was already at the requested 'x'/'y', when the add was refused because a new group would have overlapped it. This never appears in a 200: a refusal is a 409, and the host carries these into the error body's layoutConflicts. |
+| `layoutConflicts` | array of object | no | What the layout could not accommodate, on either outcome. When the add was refused because a new group would have overlapped whatever is at the requested 'x'/'y', the refusal is a 409 and the host carries these into the error body's layoutConflicts. When the add went through, these say the cube is in place but the groups below could not all be moved down to clear the frame it grew, so their spacing is left to the caller. Null when there is nothing to report, which is the normal 200. |
 
 ### `PUT /projects/current/actions/{groupId}/{actionId}`
 
