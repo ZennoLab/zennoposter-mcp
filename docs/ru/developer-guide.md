@@ -53,7 +53,7 @@ curl -H "Authorization: Bearer <api-key>" http://localhost:5299/api/v1/projects/
 | T0 | Чтение/просмотр, без побочных эффектов. | Только ApiKey. |
 | T1 | Изменяет проект/модель, обратимо, без выполнения. | ApiKey + скоуп. |
 | T2 | Выполнение с собственными привилегиями приложения (запустить задачу, завершить сессию). | ApiKey + скоуп + аудит. |
-| T3 | Достигает уровня ОС — файловая система/сеть/компиляция+запуск OwnCode, либо администрирование ключей/аудита. Класс RCE. | ApiKey + скоуп + аудит (+ HITL в будущем). |
+| T3 | Достигает уровня ОС — файловая система/сеть/компиляция+запуск OwnCode, либо администрирование ключей/аудита. Класс RCE. | ApiKey + скоуп + аудит, а также подтверждение человеком, если владелец его включил ([«Модель безопасности»](security-model.md)). |
 
 Скоупы организованы по доменам с пространством имён: `project:read/edit/run/record`, `task:read/edit/control`, `instance:read/control/interact`, `code:read/author`, а также сквозной `admin`. Контентные скоупы (`io:filesystem`, `io:network`, `io:database`, `system:exec`, `code:author`) требуются **в момент исполнения**: запуск задачи/проекта, чьи действия трогают файловую систему, сеть, БД или ОС, требует соответствующего скоупа `io:*`/`system:exec` поверх собственного скоупа операции, а проект с кодом или содержащий OwnCode требует `code:author`. Тело `403` перечисляет, чего именно не хватает (`missingScopes`, `dangerousCategories`, `unknownCategories`).
 
@@ -75,6 +75,34 @@ POST /projects/current/actions/{groupId}/{actionId}/execute
 Добавление действия, чей `type` — `OwnCode`, дополнительно требует `code:author` (T3) сверх `project:edit` — авторство нового исполняемого кода и запуск существующего проекта разграничены по скоупам: ключ с низкими привилегиями может запустить доверенный проект, но не может внедрить и выполнить новый код тем же ключом.
 
 Общий блок кода проекта относится к тому же классу. `GET /projects/current/shared-code` читает директивы using и общий код на уровне T0 со скоупом `code:read`, а `PUT` по тому же пути требует `code:author` (T3), потому что этот код компилируется в проект и выполняется вместе с ним. Список ссылок из GAC у блока отдельный: `GET /projects/current/gac-references` — это T0 `project:read`, а заменяющий его `PUT` — T1 `project:edit`, поскольку ссылка сама по себе ничего не исполняет.
+
+#### Пошаговая отладка (точка остановки → запуск → пауза → шаг)
+
+Четыре операции `debug_*` управляют отладчиком ProjectMaker так же, как кнопки на панели. Шаг и запуск исполняют кубики, поэтому это T3 `project:run` с тем же гейтом по содержимому проекта, что у `project_start`; пауза — T2 `project:run`; статус — T0 `project:read`, так что ключ только на чтение может наблюдать за прогоном, которым не управляет. Шаг, запуск и пауза **отвечают до того, как кубик выполнится** — результат читается только из `debug_status`, поэтому за каждым управляющим вызовом следует опрос:
+
+```bash
+# 1. поставить точку остановки на кубик, где нужно остановиться
+curl -X PATCH -H "Authorization: Bearer <api-key>" -H "Content-Type: application/json" \
+  -d '{"breakpoint":true}' http://localhost:5299/api/v1/projects/current/actions/{groupId}/{actionId}/properties
+
+# 2. запустить прогон и опрашивать статус, пока состояние не перестанет быть Running
+curl -X POST -H "Authorization: Bearer <api-key>" -d '{}' http://localhost:5299/api/v1/projects/current/start
+curl -H "Authorization: Bearer <api-key>" http://localhost:5299/api/v1/projects/current/debug/status
+# → {"state":"Paused","actionId":"<кубик с точкой остановки>","groupId":"...","breakpointHit":true,
+#    "actionFailed":false,"executionError":null}
+
+# 3. осмотреться, затем продолжить на один кубик («Далее») или до следующей точки остановки («До т. останова»)
+curl -H "Authorization: Bearer <api-key>" http://localhost:5299/api/v1/projects/current/variables
+curl -X POST -H "Authorization: Bearer <api-key>" -d '{}' http://localhost:5299/api/v1/projects/current/debug/step
+curl -X POST -H "Authorization: Bearer <api-key>" -d '{}' http://localhost:5299/api/v1/projects/current/debug/run
+# после каждого — снова опрос debug/status: Paused = остановились на следующем кубике, Idle = проект дошёл до конца
+
+# 4. прервать долгий кубик, не теряя прогон
+curl -X POST -H "Authorization: Bearer <api-key>" -d '{}' http://localhost:5299/api/v1/projects/current/debug/pause
+# → статус показывает Stopping, пока кубик не завершится, затем Paused; debug/step или debug/run продолжают с этого места
+```
+
+`state` принимает значения `Idle` (продолжать нечего — прогон не запускался или проект дошёл до конца), `Running`, `Paused` (между кубиками: точка остановки, шаг, пауза или упавший кубик) и `Stopping` (запрошена пауза или остановка, текущий кубик ещё завершается). На упавшем кубике прогон остаётся на паузе **на нём** с `actionFailed: true` и текстом ошибки в `executionError`. Повторный шаг или запуск, пока кубик ещё исполняется, отклоняется с `409 failed_precondition`; `debug/pause` и `/projects/current/stop` на паузе — успешные no-op, ни один из них не исполняет кубик. Сразу после `project_start` есть короткое окно, когда статус уже показывает `Running`, а отладчик ещё не стартовал: шаг, запуск, пауза и остановка в нём отклоняются тем же `409 failed_precondition` — опросите `debug/status` и повторите, когда состояние станет `Running` или `Paused`. `debug/step` и `debug/run` принимают необязательное `{"fromCursor": true|false}` на случай, когда курсор в редакторе сдвинули с кубика, на котором прогон остановился: `true` — продолжить с курсора, `false` — с остановленного кубика, без параметра — по сохранённому выбору пользователя в ProjectMaker. Готовый smoke-прогон этого цикла — `test/Smoke/publicapi-debug-stepping.ps1` в репозитории продукта.
 
 ### Задачи ZennoPoster (`task:*`) — хост = ZennoPoster Core
 
@@ -116,6 +144,8 @@ PUT  /tasks/{id}/config     (T1, task:edit)     — обновить польз�
 #### Состояние времени выполнения и точки отказа
 
 `GET /tasks/{id}/state` возвращает счётчики плюс `failurePoints`: **снапшот последнего отказа по каждому рабочему потоку**, а НЕ очередь событий. Чтение неразрушающее — повторные GET возвращают те же записи; запись перезаписывается на месте, когда её поток падает снова (ключ taskId+threadId), истекает через 2 часа, ограничена 64 записями на задачу и полностью очищается только при удалении задачи. Дедуплицируйте на клиенте по `(threadId, timestamp)` или `uowId`. Внимание: снапшот `variables` внутри точки отказа может содержать чувствительные значения и читается со скоупом `task:read` (T0) — скоупируйте ключи соответственно.
+
+`GET /tasks/{id}/logs` (T1, `task:read`) возвращает журнал выполнения, который привёл к отказу: записи, сделанные проектом, и действия, через которые прошёл движок, в одном потоке по времени, от старых к новым. Параметры запроса: `logLevel` — маска уровней (Info=1, Warning=2, Error=4, по умолчанию 7; 4 возвращает упавшие шаги вместе с записями об ошибках), `skip` и `take` — постраничное чтение (по умолчанию 100 записей), `uowId` — только одна попытка. Журнал хранится в памяти: последние 8 попыток каждой задачи, до 2000 записей на попытку, 2 часа. Пустой результат означает, что для задачи ничего не сохранено. Записи содержат всё, что записал проект, включая чувствительные значения.
 
 #### Настройки планировщика
 
@@ -165,7 +195,10 @@ POST /sessions/{id}/complete    (T2, task:control)   — завершить ок
 GET  /instances                                     (T0, instance:read)
 POST /instances/{id}/tabs/{tabId}/navigate          (T1, instance:interact)  — { "url": "...", "timeout": 5 }
 POST /instances/{id}/tabs/{tabId}/elements/event    (T1, instance:interact)  — { "xpath": "...", "eventName": "click" }
+GET  /instances/{id}/tabs/{tabId}/screenshot        (T0, instance:read)      — ?fullPage=true&maxWidth=1280
 ```
+
+`.../screenshot` возвращает PNG в base64: по умолчанию видимую область, с `fullPage=true` — страницу сверху. Картинка вписывается в 1280 px по длинной стороне, если не заданы `maxWidth` или `maxHeight` (не больше 2000 px на сторону); `scale` и `isTruncated` в ответе говорят, была ли она уменьшена или обрезана.
 
 **Release ≠ close.** `DELETE /instances/{id}` мягко возвращает запущенный через API браузер в **пул**, и пул сам решает — освободить или перезапустить: окно может остаться жить для переиспользования; это by design, а не утечка. Порты, принадлежащие рабочему потоку выполняющейся задачи, защищены: `409 instance_busy`. `POST /instances/{id}/show` отвечает `409 instance_view_protected`, когда вид браузера защищён (защита вида включена, открытого окна `WaitForUserAction` нет) — `200` всегда означает, что окно реально показано.
 
@@ -176,9 +209,12 @@ GET  /auth/whoami      (T0, без скоупа)  — собственные с�
 GET  /capabilities     (T0, без скоупа)  — манифест ниже
 POST /auth/keys        (T3, admin)      — выпустить ключ (та же операция, которую вызывает UI)
 GET  /audit            (T0, admin)      — журнал вызовов
+GET  /plugins/trust    (T0, admin)      — файлы плагинов, запиненные владельцем, по SHA-256
+POST /plugins/trust    (T2, admin)      — запинить установленный файл плагина: {"path": "Local\\my-plugin.zpg"}
+DELETE /plugins/trust/{sha256} (T2, admin) — снять пин
 ```
 
-**`GET /audit` — журнал администрирования ключей на хосте**: операций скоупа `admin` (`/auth/keys*` и сам `/audit`), включая отклонённые попытки. Обычные доменные вызовы — всё под `/projects`, `/tasks`, `/instances` и прочим — в журнал **не** попадают, поэтому он говорит, кто менял набор ключей, а не что ключ потом делал. Каждая запись несёт временную метку, id/label ключа (никогда сам токен), метод, путь и код статуса; фильтруйте `?since=`/`?until=` (ISO-8601), `?keyId=`, `?method=`, `?statusCode=`, пагинация `?skip=`/`?take=`.
+**`GET /audit` — журнал всего, что имеет тир `T2` и выше**, плюс поверхность `admin` (`/auth/keys*` и сам `/audit`), включая отклонённые попытки. То есть он отвечает и на «кто менял набор ключей», и на «кто запустил этот проект, выполнил это действие, стартовал эту задачу». У каждого хоста свой журнал, и отвечает он только за себя, так что для полной картины опрашивайте оба порта. Чтения и правки `T0`/`T1` намеренно оставлены за бортом — почему, и чего стоят поля адреса пира и единицы работы, см. [security-model.md](security-model.md). Каждая запись несёт временную метку, id операции, хост, id/label ключа (никогда сам токен), метод, путь, код статуса, тир, требуемый скоуп, длительность, адрес пира и `X-Zenno-Uow-Id` вызывающего, если он его прислал; фильтруйте `?since=`/`?until=` (ISO-8601), `?keyId=`, `?method=`, `?statusCode=`, пагинация `?skip=`/`?take=`.
 
 **`GET /auth/keys`** перечисляет каждую запись ключа с `systemProvisioned` (автовыпущен хостом для его встроенных MCP-сайдкаров — вы их не создавали, и UI «My keys» их скрывает) и `status` (`active`, `expired` или `disabled`). Истёкший/отключённый ключ уже не проходит аутентификацию, но остаётся в списке до отзыва — отзыв удаляет запись физически и необратим. Фильтры: `?includeSystemProvisioned=false` и `?status=` (`active`, `expired` или `disabled`).
 
@@ -198,8 +234,8 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 ```json
 {
   "host": "zennoposter",
-  "version": "1.3.0",
-  "productVersion": "7.9.2.0",
+  "version": "1.4.0",
+  "productVersion": "7.9.3.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,
   "operations": [
@@ -220,4 +256,4 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 
 `version` — версия контракта, которую обслуживает хост, `productVersion` — сборка продукта за ним, так что один вызов говорит, с чем именно вы общаетесь; пустой `productVersion` означает, что хост его не сообщает. Сопоставление обоих с релизами MCP-серверов — в [compatibility.md](compatibility.md).
 
-<!-- translated-from: developer-guide.md 8be31f5bd7320dd9c7c89b04e6faf34a7f139a35 -->
+<!-- translated-from: developer-guide.md 4506605f0845031c202a68b29e46c50ae53e494b -->

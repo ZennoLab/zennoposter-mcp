@@ -6,8 +6,9 @@ The local HTTP API of ProjectMaker and ZennoPoster: what it exposes, how a key i
 scoped, what the errors mean, and how the contract evolves. The API is loopback-only — see the
 security model.
 
-This site documents ZennoPoster **7.9.2 and newer** and ZennoDroid **2.6.1 and newer**, contract
-version **1.3.0**, MCP servers **0.4.0** (MCP.ProjectMaker, MCP.ZennoPoster, MCP.Android) and **0.2.0** (MCP.Instance). Which server goes with which product, and
+This site documents ZennoPoster **7.9.3 and newer** and ZennoDroid **2.6.1 and newer**, contract
+version **1.4.0**, MCP servers **0.5.0** (MCP.ProjectMaker, MCP.ZennoPoster), **0.4.0** (MCP.Android)
+and **0.3.0** (MCP.Instance). Which server goes with which product, and
 how to read the versions off your own installation, are in [compatibility.md](compatibility.md).
 
 - **[developer-guide.md](developer-guide.md)** — start here: quickstart, issuing a key,
@@ -21,6 +22,8 @@ how to read the versions off your own installation, are in [compatibility.md](co
   version go together, and how to read all three off a running installation.
 - **[errors.md](errors.md)** — every HTTP status / error code this API returns, and how to handle
   each one.
+- **[data-collection.md](data-collection.md)** — what anonymized telemetry is collected for
+  PublicApi usage and key issuance, what is not collected, and how it is handled.
 - **[security-model.md](security-model.md)** — what an ApiKey does and doesn't protect against,
   localhost-only ingress, and audit.
 - **[openapi/openapi.v1.json](openapi/openapi.v1.json)** — the machine-readable OpenAPI 3.0.3

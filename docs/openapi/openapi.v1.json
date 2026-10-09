@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "ZennoLab PublicApi",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Versioned, transport-neutral control plane for ProjectMaker and ZennoPoster."
   },
   "servers": [
@@ -614,6 +614,255 @@
                 "schema": {
                   "type": "object",
                   "properties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/debug/step": {
+      "post": {
+        "operationId": "debug_step",
+        "summary": "Debugger \u0027Next\u0027: execute the current cube and pause on the following one (RCE class)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 3,
+        "x-implemented": true,
+        "x-required-scope": "project:run",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fromCursor": {
+                    "type": "boolean",
+                    "description": "Where to continue from when the editor cursor was moved away from the cube the debugger stopped on (the user clicked another cube, or cursor_set was called). true = from the cursor; false = from the cube the run stopped on; omitted = the user\u0027s saved ProjectMaker choice when they turned the \u0022where to continue?\u0022 question off, otherwise from the cube the run stopped on. Never shows the ProjectMaker dialog."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/debug/run": {
+      "post": {
+        "operationId": "debug_run",
+        "summary": "Debugger \u0027To breakpoint\u0027: continue until the next breakpoint or the end of the project (RCE class)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 3,
+        "x-implemented": true,
+        "x-required-scope": "project:run",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fromCursor": {
+                    "type": "boolean",
+                    "description": "Where to continue from when the editor cursor was moved away from the cube the debugger stopped on (the user clicked another cube, or cursor_set was called). true = from the cursor; false = from the cube the run stopped on; omitted = the user\u0027s saved ProjectMaker choice when they turned the \u0022where to continue?\u0022 question off, otherwise from the cube the run stopped on. Never shows the ProjectMaker dialog."
+                  },
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/debug/pause": {
+      "post": {
+        "operationId": "debug_pause",
+        "summary": "Pause the debug run after the current cube finishes (resumable, unlike project_stop)",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 2,
+        "x-implemented": true,
+        "x-required-scope": "project:run",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session": {
+                    "type": "string",
+                    "description": "Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts \u2014 no host reads it; authentication is carried by the API key header instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "409": {
+            "description": "failed_precondition: The project is not in a state that allows this operation (RESULT_FAILED_PRECONDITION)."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/current/debug/status": {
+      "get": {
+        "operationId": "debug_status",
+        "summary": "Debugger state (running/paused/stopping/idle), current cube, breakpoint and failure flags",
+        "tags": [
+          "ProjectMaker"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "project:read",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "Idle",
+                        "Running",
+                        "Paused",
+                        "Stopping"
+                      ],
+                      "description": "Where the run stands: Idle (no run in progress) | Running (a cube is executing) | Paused (stopped between cubes, can be continued) | Stopping (pause/stop requested, waiting for the current cube to finish)."
+                    },
+                    "groupId": {
+                      "type": "string",
+                      "description": "Id of the group containing the cube the debugger is on. Null when no cube is current."
+                    },
+                    "actionId": {
+                      "type": "string",
+                      "description": "Id of the cube the debugger is on: the one about to execute when Paused, the executing one when Running. Null when no cube is current (e.g. Idle after the project reached its end)."
+                    },
+                    "breakpointHit": {
+                      "type": "boolean",
+                      "description": "True when the current cube has a breakpoint set \u2014 i.e. the pause is a breakpoint hit."
+                    },
+                    "actionFailed": {
+                      "type": "boolean",
+                      "description": "True when the current cube failed (the run paused ON the failed cube rather than moving past it). Fix the cube or set the cursor elsewhere, then debug_step / debug_run to continue."
+                    },
+                    "executionError": {
+                      "type": "string",
+                      "description": "Message of the error that failed the current cube \u2014 set only when ActionFailed is true and the project\u0027s last error belongs to that cube."
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "breakpointHit",
+                    "actionFailed"
+                  ]
                 }
               }
             }
@@ -1471,6 +1720,10 @@
                           "onErrorPath": {
                             "type": "boolean",
                             "description": "True when the cube belongs to an error/cleanup branch \u2014 i.e. it is reachable from an OnError edge target by following normal (OnSuccess/Default/Case) edges. Best-effort marker."
+                          },
+                          "contentHash": {
+                            "type": "string",
+                            "description": "For a Project|Plugin cube: SHA-256 (64 lowercase hex chars) of the plugin file it points at, when the host could resolve the path without running the project; null otherwise and for every other cube. This is the value the owner pins with POST /plugins/trust."
                           }
                         },
                         "required": [
@@ -9489,6 +9742,121 @@
         }
       }
     },
+    "/api/v1/tasks/{id}/logs": {
+      "get": {
+        "operationId": "task_logs_get",
+        "summary": "Execution log: project log records and the route through the actions, merged in time order (?logLevel=\u0026skip=\u0026take=\u0026uowId=)",
+        "tags": [
+          "ZennoPoster"
+        ],
+        "x-risk-tier": 1,
+        "x-implemented": true,
+        "x-required-scope": "task:read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Id of the task the entries belong to."
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "description": "Whether this is a log record the project wrote or a step the engine took."
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "description": "UTC timestamp, ISO-8601 (\u0022o\u0022). The stream is ordered by this."
+                          },
+                          "level": {
+                            "type": "string",
+                            "description": "Entry severity: Info | Warning | Error."
+                          },
+                          "uowId": {
+                            "type": "string",
+                            "description": "The attempt this entry belongs to; pass it back as ?uowId= to read that attempt alone."
+                          },
+                          "threadId": {
+                            "type": "integer",
+                            "description": "Managed thread id of the worker that produced the entry."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "Message text for a message entry, or the marker text (\u0022Project Failed\u0022) for a run-level step."
+                          },
+                          "way": {
+                            "type": "string",
+                            "description": "Where the project wrote from, when it said. Usually empty."
+                          },
+                          "actionId": {
+                            "type": "string",
+                            "description": "The action this entry is about; empty for run-level markers."
+                          },
+                          "actionGroupId": {
+                            "type": "string",
+                            "description": "The group containing that action. Steps carry it; messages do not."
+                          },
+                          "actionName": {
+                            "type": "string",
+                            "description": "The action\u0027s display name, so the entry can be read without fetching the schema."
+                          },
+                          "direction": {
+                            "type": "string",
+                            "description": "For steps: In (entered the action), Good (finished), Bad (failed), Info (a marker)."
+                          },
+                          "elapsedMilliseconds": {
+                            "type": "integer",
+                            "description": "How long the action took, on the step that finished or failed it."
+                          }
+                        },
+                        "required": [
+                          "threadId"
+                        ]
+                      },
+                      "description": "Matching entries, oldest first, after the skip/take window is applied."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "404": {
+            "description": "not_found: The referenced resource (task/instance/tab/element/key) does not exist."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
     "/api/v1/sessions": {
       "get": {
         "operationId": "sessions_list",
@@ -10652,6 +11020,127 @@
         }
       }
     },
+    "/api/v1/instances/{id}/tabs/{tabId}/screenshot": {
+      "get": {
+        "operationId": "tab_screenshot_get",
+        "summary": "PNG screenshot of the tab: the viewport by default or the top of the whole page (fullPage=true), fitted into maxWidth/maxHeight (1280 px long side by default, 2000 px cap)",
+        "tags": [
+          "Instance"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "instance:read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tabId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxWidth",
+            "in": "query",
+            "required": false,
+            "description": "Largest image width in pixels, hard cap 2000; 0 or omitted = no explicit limit (with maxHeight also omitted the long side is fitted into 1280).",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "maxHeight",
+            "in": "query",
+            "required": false,
+            "description": "Largest image height in pixels, hard cap 2000; 0 or omitted = no explicit limit. A fullPage capture is cut at this height rather than shrunk into a strip.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "fullPage",
+            "in": "query",
+            "required": false,
+            "description": "false (default) = the visible viewport at the current scroll position; true = the page from the top down to the height limit.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "imageBase64": {
+                      "type": "string",
+                      "description": "The PNG image, base64-encoded (no data-URI prefix)."
+                    },
+                    "mimeType": {
+                      "type": "string",
+                      "description": "Media type of the encoded image. Always \u0022image/png\u0022."
+                    },
+                    "width": {
+                      "type": "integer",
+                      "description": "Width of the returned image in pixels."
+                    },
+                    "height": {
+                      "type": "integer",
+                      "description": "Height of the returned image in pixels."
+                    },
+                    "isTruncated": {
+                      "type": "boolean",
+                      "description": "True when the picture does not show the whole page: a viewport capture of a page that scrolls, or a full-page capture cut at the height limit."
+                    },
+                    "scale": {
+                      "type": "number",
+                      "description": "Ratio of the returned image to the capture; 1.0 when nothing was shrunk. Divide the picture\u0027s pixel coordinates by it to get page pixels."
+                    },
+                    "fullPage": {
+                      "type": "boolean",
+                      "description": "True when the capture is the whole page (its top part up to the limit), false for the viewport."
+                    }
+                  },
+                  "required": [
+                    "width",
+                    "height",
+                    "isTruncated",
+                    "scale",
+                    "fullPage"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "404": {
+            "description": "not_found: The referenced resource (task/instance/tab/element/key) does not exist."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
     "/api/v1/instances/{id}/tabs/{tabId}/elements/attribute": {
       "get": {
         "operationId": "element_attribute_get",
@@ -11601,6 +12090,14 @@
                         "format": "date-time",
                         "description": "When the call was handled (UTC)."
                       },
+                      "operationId": {
+                        "type": "string",
+                        "description": "Catalog id of the operation, e.g. project_start. Groups calls the way Path cannot, since a path carries the ids of whatever it addressed."
+                      },
+                      "host": {
+                        "type": "string",
+                        "description": "Which host served the call (projectmaker/zennoposter). Each writes its own log, so this is redundant until the logs are merged, and then it is the only thing that tells the entries apart."
+                      },
                       "keyId": {
                         "type": "string",
                         "description": "Id of the calling key, or null when the call was unauthenticated (401)."
@@ -11632,6 +12129,14 @@
                       "durationMs": {
                         "type": "integer",
                         "description": "How long the call took to handle, in milliseconds."
+                      },
+                      "peer": {
+                        "type": "string",
+                        "description": "Address the call came from. The API is loopback-only, so in this release it is always a loopback address and tells callers apart no further than that."
+                      },
+                      "uowId": {
+                        "type": "string",
+                        "description": "Unit of work the caller said it acts for (X-Zenno-Uow-Id), or null. Supplied by the caller, so read it as a hint for correlating a call with a running task, not as proof."
                       }
                     },
                     "required": [
@@ -11771,21 +12276,89 @@
     "/api/v1/confirmations": {
       "get": {
         "operationId": "confirmations_list",
-        "summary": "Pending HITL confirmations",
+        "summary": "Requests waiting for a person right now",
         "tags": [
           "CrossCutting"
         ],
         "x-risk-tier": 0,
-        "x-implemented": false,
+        "x-implemented": true,
+        "x-required-scope": "admin",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Opaque id used to approve or reject this one request. Valid only while it waits."
+                      },
+                      "operationId": {
+                        "type": "string",
+                        "description": "Stable operation id from the frozen catalog, e.g. task_start."
+                      },
+                      "method": {
+                        "type": "string",
+                        "description": "REST binding of the operation, for a person reading the prompt."
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "The catalog\u0027s own description of the operation, which is what a prompt shows."
+                      },
+                      "tier": {
+                        "type": "integer",
+                        "description": "Numeric risk tier of the operation, 0..3."
+                      },
+                      "requiredScope": {
+                        "type": "string"
+                      },
+                      "keyId": {
+                        "type": "string",
+                        "description": "Registry id of the calling key; null when the operation is open and was called anonymously."
+                      },
+                      "keyLabel": {
+                        "type": "string",
+                        "description": "Label the key was issued under, which is what identifies the caller to a person."
+                      },
+                      "host": {
+                        "type": "string",
+                        "description": "Which process is holding the request, since each one keeps its own queue."
+                      },
+                      "requestedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "expiresAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "When the wait runs out and the policy answers instead of a person."
+                      }
+                    },
+                    "required": [
+                      "tier",
+                      "requestedAt",
+                      "expiresAt"
+                    ]
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad request"
           },
           "401": {
             "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
           },
           "500": {
             "description": "Internal error"
@@ -11796,12 +12369,13 @@
     "/api/v1/confirmations/{id}/approve": {
       "post": {
         "operationId": "confirmation_approve",
-        "summary": "Approve an operation (UI only)",
+        "summary": "Let a waiting request through",
         "tags": [
           "CrossCutting"
         ],
-        "x-risk-tier": 0,
-        "x-implemented": false,
+        "x-risk-tier": 2,
+        "x-implemented": true,
+        "x-required-scope": "admin",
         "parameters": [
           {
             "name": "id",
@@ -11813,14 +12387,20 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad request"
           },
           "401": {
             "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "404": {
+            "description": "not_found: The referenced resource (task/instance/tab/element/key) does not exist."
           },
           "500": {
             "description": "Internal error"
@@ -11831,12 +12411,13 @@
     "/api/v1/confirmations/{id}/reject": {
       "post": {
         "operationId": "confirmation_reject",
-        "summary": "Reject an operation (UI only)",
+        "summary": "Refuse a waiting request",
         "tags": [
           "CrossCutting"
         ],
-        "x-risk-tier": 0,
-        "x-implemented": false,
+        "x-risk-tier": 2,
+        "x-implemented": true,
+        "x-required-scope": "admin",
         "parameters": [
           {
             "name": "id",
@@ -11848,14 +12429,207 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad request"
           },
           "401": {
             "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "404": {
+            "description": "not_found: The referenced resource (task/instance/tab/element/key) does not exist."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/plugins/trust": {
+      "get": {
+        "operationId": "plugins_trust_list",
+        "summary": "Plugin files the owner trusts, by SHA-256",
+        "tags": [
+          "CrossCutting"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "admin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sha256": {
+                        "type": "string",
+                        "description": "SHA-256 of the plugin file, 64 lowercase hex characters. The identity of the pin."
+                      },
+                      "fileName": {
+                        "type": "string",
+                        "description": "File name (relative to the plugins folder) the pin was made from."
+                      },
+                      "pluginName": {
+                        "type": "string"
+                      },
+                      "pluginVersion": {
+                        "type": "string"
+                      },
+                      "pinnedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "pinnedBy": {
+                        "type": "string",
+                        "description": "Label or id of the key (or \u0022ui\u0022) that made the pin."
+                      }
+                    },
+                    "required": [
+                      "pinnedAt"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "plugin_trust_pin",
+        "summary": "Trust an installed plugin file by its current hash",
+        "tags": [
+          "CrossCutting"
+        ],
+        "x-risk-tier": 2,
+        "x-implemented": true,
+        "x-required-scope": "admin",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Path of the plugin file, absolute or relative to the plugins folder."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sha256": {
+                      "type": "string",
+                      "description": "SHA-256 of the plugin file, 64 lowercase hex characters. The identity of the pin."
+                    },
+                    "fileName": {
+                      "type": "string",
+                      "description": "File name (relative to the plugins folder) the pin was made from."
+                    },
+                    "pluginName": {
+                      "type": "string"
+                    },
+                    "pluginVersion": {
+                      "type": "string"
+                    },
+                    "pinnedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "pinnedBy": {
+                      "type": "string",
+                      "description": "Label or id of the key (or \u0022ui\u0022) that made the pin."
+                    }
+                  },
+                  "required": [
+                    "pinnedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "404": {
+            "description": "not_found: The referenced resource (task/instance/tab/element/key) does not exist."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/plugins/trust/{sha256}": {
+      "delete": {
+        "operationId": "plugin_trust_unpin",
+        "summary": "Withdraw trust from a plugin hash",
+        "tags": [
+          "CrossCutting"
+        ],
+        "x-risk-tier": 2,
+        "x-implemented": true,
+        "x-required-scope": "admin",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "404": {
+            "description": "not_found: The referenced resource (task/instance/tab/element/key) does not exist."
           },
           "500": {
             "description": "Internal error"

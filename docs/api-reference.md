@@ -20,17 +20,6 @@ marked `no` in a response may be `null` or absent.
 - [Instance — browser instances, tabs & elements](#instance--browser-instances-tabs--elements)
 - [Android — ZennoDroid device](#android--zennodroid-device)
 - [Cross-cutting — auth, audit & capabilities](#cross-cutting--auth-audit--capabilities)
-- [Declared, not implemented](#declared-not-implemented)
-
-## Declared, not implemented
-
-The following operations are part of the contract but have **no implementation yet** —
-calling any of them returns `501 not_implemented`. They are listed in the capabilities
-manifest with `implemented: false`.
-
-- `GET /confirmations` (`confirmations_list`) — Pending HITL confirmations.
-- `POST /confirmations/{id}/approve` (`confirmation_approve`) — Approve an operation (UI only).
-- `POST /confirmations/{id}/reject` (`confirmation_reject`) — Reject an operation (UI only).
 
 ## ProjectMaker — editor automation
 
@@ -217,11 +206,86 @@ Stop the running project.
 |---|---|---|---|
 | `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `409` failed_precondition · `500` internal_error
 
 **Success body (200):**
 
 _(empty object)_
+
+### `POST /projects/current/debug/step`
+
+`debug_step` · tier **T3** · scope `project:run`
+
+Debugger 'Next': execute the current cube and pause on the following one (RCE class).
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `fromCursor` | boolean | no | Where to continue from when the editor cursor was moved away from the cube the debugger stopped on (the user clicked another cube, or cursor_set was called). true = from the cursor; false = from the cube the run stopped on; omitted = the user's saved ProjectMaker choice when they turned the "where to continue?" question off, otherwise from the cube the run stopped on. Never shows the ProjectMaker dialog. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+_(empty object)_
+
+### `POST /projects/current/debug/run`
+
+`debug_run` · tier **T3** · scope `project:run`
+
+Debugger 'To breakpoint': continue until the next breakpoint or the end of the project (RCE class).
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `fromCursor` | boolean | no | Where to continue from when the editor cursor was moved away from the cube the debugger stopped on (the user clicked another cube, or cursor_set was called). true = from the cursor; false = from the cube the run stopped on; omitted = the user's saved ProjectMaker choice when they turned the "where to continue?" question off, otherwise from the cube the run stopped on. Never shows the ProjectMaker dialog. |
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+_(empty object)_
+
+### `POST /projects/current/debug/pause`
+
+`debug_pause` · tier **T2** · scope `project:run`
+
+Pause the debug run after the current cube finishes (resumable, unlike project_stop).
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `session` | string | no | Optional legacy session identifier kept for wire compatibility. Ignored by v1 hosts — no host reads it; authentication is carried by the API key header instead. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `409` failed_precondition · `500` internal_error
+
+**Success body (200):**
+
+_(empty object)_
+
+### `GET /projects/current/debug/status`
+
+`debug_status` · tier **T0** · scope `project:read`
+
+Debugger state (running/paused/stopping/idle), current cube, breakpoint and failure flags.
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `409` project_not_open · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `state` | enum(Idle \| Running \| Paused \| Stopping) | yes | Where the run stands: Idle (no run in progress) \| Running (a cube is executing) \| Paused (stopped between cubes, can be continued) \| Stopping (pause/stop requested, waiting for the current cube to finish). |
+| `groupId` | string | no | Id of the group containing the cube the debugger is on. Null when no cube is current. |
+| `actionId` | string | no | Id of the cube the debugger is on: the one about to execute when Paused, the executing one when Running. Null when no cube is current (e.g. Idle after the project reached its end). |
+| `breakpointHit` | boolean | yes | True when the current cube has a breakpoint set — i.e. the pause is a breakpoint hit. |
+| `actionFailed` | boolean | yes | True when the current cube failed (the run paused ON the failed cube rather than moving past it). Fix the cube or set the cursor elsewhere, then debug_step / debug_run to continue. |
+| `executionError` | string | no | Message of the error that failed the current cube — set only when ActionFailed is true and the project's last error belongs to that cube. |
 
 ### `GET /actions/catalog`
 
@@ -2011,6 +2075,23 @@ Update user settings (reports applied/skipped names).
 | `applied` | array of string | no | Setting names (with their resolved variable) that matched and were applied. |
 | `skipped` | array of string | no | Setting names that matched no setting of the task and were skipped. |
 
+### `GET /tasks/{id}/logs`
+
+`task_logs_get` · tier **T1** · scope `task:read`
+
+Execution log: project log records and the route through the actions, merged in time order (?logLevel=&skip=&take=&uowId=).
+
+**Path parameters:** `id`.
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | no | Id of the task the entries belong to. |
+| `entries` | array of object | no | Matching entries, oldest first, after the skip/take window is applied. |
+
 ### `GET /sessions`
 
 `sessions_list` · tier **T0** · scope `task:read`
@@ -2305,6 +2386,36 @@ DOM text (tag filter, pagination).
 | `nextIndex` | integer | no | Offset to pass as startIndex on the next call, or null if there is no more content. |
 | `isTruncated` | boolean | yes | True when more content remains after this chunk — continue from NextIndex. |
 
+### `GET /instances/{id}/tabs/{tabId}/screenshot`
+
+`tab_screenshot_get` · tier **T0** · scope `instance:read`
+
+PNG screenshot of the tab: the viewport by default or the top of the whole page (fullPage=true), fitted into maxWidth/maxHeight (1280 px long side by default, 2000 px cap).
+
+**Path parameters:** `id`, `tabId`.
+
+**Query parameters:**
+
+| Name | Type | Description |
+|---|---|---|
+| `maxWidth` | integer | Largest image width in pixels, hard cap 2000; 0 or omitted = no explicit limit (with maxHeight also omitted the long side is fitted into 1280). |
+| `maxHeight` | integer | Largest image height in pixels, hard cap 2000; 0 or omitted = no explicit limit. A fullPage capture is cut at this height rather than shrunk into a strip. |
+| `fullPage` | boolean | false (default) = the visible viewport at the current scroll position; true = the page from the top down to the height limit. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `imageBase64` | string | no | The PNG image, base64-encoded (no data-URI prefix). |
+| `mimeType` | string | no | Media type of the encoded image. Always "image/png". |
+| `width` | integer | yes | Width of the returned image in pixels. |
+| `height` | integer | yes | Height of the returned image in pixels. |
+| `isTruncated` | boolean | yes | True when the picture does not show the whole page: a viewport capture of a page that scrolls, or a full-page capture cut at the height limit. |
+| `scale` | number | yes | Ratio of the returned image to the capture; 1.0 when nothing was shrunk. Divide the picture's pixel coordinates by it to get page pixels. |
+| `fullPage` | boolean | yes | True when the capture is the whole page (its top part up to the limit), false for the viewport. |
+
 ### `GET /instances/{id}/tabs/{tabId}/elements/attribute`
 
 `element_attribute_get` · tier **T0** · scope `instance:read`
@@ -2577,28 +2688,79 @@ Manifest: operations, tiers, required scopes.
 
 ### `GET /confirmations`
 
-`confirmations_list` · tier **T0** · scope `—` · **not implemented (501)**
+`confirmations_list` · tier **T0** · scope `admin`
 
-Pending HITL confirmations.
+Requests waiting for a person right now.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `500` internal_error
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
+
+**Success body (200):**
+
+_(empty object)_
 
 ### `POST /confirmations/{id}/approve`
 
-`confirmation_approve` · tier **T0** · scope `—` · **not implemented (501)**
+`confirmation_approve` · tier **T2** · scope `admin`
 
-Approve an operation (UI only).
+Let a waiting request through.
 
 **Path parameters:** `id`.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `500` internal_error
+**Responses:** `204` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
 
 ### `POST /confirmations/{id}/reject`
 
-`confirmation_reject` · tier **T0** · scope `—` · **not implemented (501)**
+`confirmation_reject` · tier **T2** · scope `admin`
 
-Reject an operation (UI only).
+Refuse a waiting request.
 
 **Path parameters:** `id`.
 
-**Responses:** `200` success · `400` bad_request · `401` unauthorized · `500` internal_error
+**Responses:** `204` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+
+### `GET /plugins/trust`
+
+`plugins_trust_list` · tier **T0** · scope `admin`
+
+Plugin files the owner trusts, by SHA-256.
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
+
+**Success body (200):**
+
+_(empty object)_
+
+### `POST /plugins/trust`
+
+`plugin_trust_pin` · tier **T2** · scope `admin`
+
+Trust an installed plugin file by its current hash.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `path` | string | no | Path of the plugin file, absolute or relative to the plugins folder. |
+
+**Responses:** `201` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+
+**Success body (201):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `sha256` | string | no | SHA-256 of the plugin file, 64 lowercase hex characters. The identity of the pin. |
+| `fileName` | string | no | File name (relative to the plugins folder) the pin was made from. |
+| `pluginName` | string | no |  |
+| `pluginVersion` | string | no |  |
+| `pinnedAt` | string | yes |  |
+| `pinnedBy` | string | no | Label or id of the key (or "ui") that made the pin. |
+
+### `DELETE /plugins/trust/{sha256}`
+
+`plugin_trust_unpin` · tier **T2** · scope `admin`
+
+Withdraw trust from a plugin hash.
+
+**Path parameters:** `sha256`.
+
+**Responses:** `204` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error

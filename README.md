@@ -15,7 +15,7 @@ PublicApi documentation (the OpenAPI contract rendered with Redoc, the integrato
 error codes, versioning policy) lives at **https://zennolab.github.io/zennoposter-mcp/**
 (the pages are published from the `docs/` folder of this repository).
 
-These servers talk to **ZennoPoster 7.9.2 and newer** and to **ZennoDroid 2.6.1 and newer**.
+These servers talk to **ZennoPoster 7.9.3 and newer** and to **ZennoDroid 2.6.1 and newer**.
 `MCP.Instance` applies to ZennoPoster only and `MCP.Android` to ZennoDroid only; `MCP.ProjectMaker`
 and `MCP.ZennoPoster` apply to both.
 Which server version goes with which product and contract version:
@@ -34,6 +34,19 @@ it from outside is not supported (permissions there are defined by the service k
 yours), and **its ports must not be occupied** — a foreign process on a port from this band
 prevents the built-in server from starting (the product logs an error, but its AI stack is
 left without that server).
+
+Those internal servers have no console of their own, so the product copies everything they
+write to their output into its own log, each line prefixed with the process name
+(`MCP.ProjectMaker`, `Orchestrator`, …). Ordinary start-up chatter is tagged `Debug` and never
+reaches the log at all; only what the server itself reports as a warning or a failure, and the
+exit code of a server that dies unprompted, actually get written. That is the place to look
+when the built-in chat loses one of its servers.
+
+Those internal servers also expect a per-machine secret that the product hands only to its own
+AI processes, so being able to reach the port is no longer enough to use one: a call without it
+is **refused with `401`**, and the refusal is written to the product's log as `ingress refused`.
+The same goes for the built-in chat's own API on 6113. If you were calling those ports from your
+own client, run your own copy on the public band instead, as described below.
 
 For your own LLM client you run a **separate copy** of the MCP server from the public
 package: it listens on a public port (the tables below) and talks to the same product
@@ -80,7 +93,8 @@ arguments override environment variables, environment variables override
 On the releases page find the latest release of the server you need (by tag prefix),
 download its `*-win-x64.zip` and unpack it into any folder.
 Each archive is a single self-contained `.exe` + `appsettings.json`; no additional .NET
-runtime is required.
+runtime is required. For Claude Desktop take the `.mcpb` bundle of the same release instead, see
+[Claude Desktop: install from an .mcpb bundle](#claude-desktop-install-from-an-mcpb-bundle).
 
 ## 2. Issue an ApiKey
 
@@ -163,6 +177,81 @@ warning on mismatch, but if the target host is unreachable at startup the check 
 skipped — a mismatch is then not detected, and the AI gets instructions about one host while
 requests go to another.
 
+## stdio: the server as a subprocess of your client
+
+Besides listening on a port, every server can speak MCP over its own stdin and stdout. Start the exe
+with `--stdio` and the client that launched it owns the connection: there is no port to pick, nothing
+else on the machine can reach the server, and several clients can each run their own copy. This is
+the mode MCPB bundles and Claude Desktop use; Claude Code and MCP Inspector support it as well. The
+mode is available from server versions 0.5.0 (ProjectMaker, ZennoPoster, Android) and 0.3.0 (Instance).
+
+Only JSON-RPC goes to stdout; every log line goes to stderr. The key is read from the configuration as
+usual, which for a subprocess means the environment variable `<Section>__ApiKey` (`ProjectMaker__ApiKey`,
+`Instance__ApiKey`, `ZennoPoster__ApiKey`, `Android__ApiKey`); the `--<Section>:ApiKey=` argument and
+`appsettings.json` next to the exe work too. The Instance and Android copies take their `Target` and
+`BaseUrl` pair the same way (`Instance__Target`, `Instance__BaseUrl`, and so on).
+
+```powershell
+# Claude Code: -e stores the value in the server's own config entry, not in the launch command
+# line - without it the key only reaches the server in this one session, from this one shell.
+$env:ProjectMaker__ApiKey = "<your key>"
+claude mcp add projectmaker --transport stdio -e "ProjectMaker__ApiKey=$env:ProjectMaker__ApiKey" -- "C:\mcp\ZennoLab.AI.MCP.ProjectMaker.exe" --stdio
+```
+
+The same entries for a client that reads a `mcpServers` configuration (Claude Desktop, Cursor):
+
+```json
+{
+  "mcpServers": {
+    "projectmaker": {
+      "command": "C:\\mcp\\ZennoLab.AI.MCP.ProjectMaker.exe",
+      "args": ["--stdio"],
+      "env": { "ProjectMaker__ApiKey": "<your key>" }
+    },
+    "instance-zp": {
+      "command": "C:\\mcp\\ZennoLab.AI.MCP.Instance.exe",
+      "args": ["--stdio"],
+      "env": {
+        "Instance__ApiKey": "<your key>",
+        "Instance__Target": "zennoposter",
+        "Instance__BaseUrl": "http://localhost:5300/api/v1"
+      }
+    }
+  }
+}
+```
+
+The process ends when the client closes its stdin. Without `--stdio` nothing changes: the server
+listens on its port as described above, and the embedded AI chat of the products keeps using HTTP.
+
+## Claude Desktop: install from an .mcpb bundle
+
+Every release of a server also carries its MCPB bundles, one per client name from the tables above,
+named `MCP.<server>-<client name>-v<version>-win-x64.mcpb` (for example
+`MCP.Instance-instance-zp-v0.3.0-win-x64.mcpb`). A bundle is the same exe as in the zip, already set
+up for stdio with the right `Target` and `BaseUrl`: Claude Desktop starts it itself and asks you
+only for the key.
+
+| Bundle | Server | Works with |
+|---|---|---|
+| `projectmaker` | MCP.ProjectMaker | ZennoPoster ProjectMaker, `:5299` |
+| `instance-pm` | MCP.Instance | the browser of ZennoPoster ProjectMaker, `:5299` |
+| `instance-zp` | MCP.Instance | the browsers of running ZennoPoster tasks, `:5300` |
+| `zennoposter` | MCP.ZennoPoster | ZennoPoster tasks, `:5300` |
+| `projectmaker-droid` | MCP.ProjectMaker | ZennoDroid ProjectMaker, `:5309` |
+| `zennodroid` | MCP.ZennoPoster | ZennoDroid tasks, `:5310` |
+| `android-pm` | MCP.Android | the device attached to ZennoDroid ProjectMaker, `:5309` |
+| `android-zd` | MCP.Android | the devices of running ZennoDroid tasks, `:5310` |
+
+1. Download the bundle you need from the release of its server.
+2. In Claude Desktop open **Settings → Extensions** and drag the `.mcpb` file into the window.
+3. Enter the ApiKey issued in step 2. The field is required: without a key the installation does
+   not finish. Claude Desktop keeps the key with its own settings; the bundle itself holds no key.
+4. Start the product the bundle works with. The tools of the server appear in the chat.
+
+To replace the key, open the extension in **Settings → Extensions** and change it there. A bundle
+listens on no port, so it never collides with a copy of the same server you started from the zip.
+
 ## 4. Configure your LLM client
 
 A ready-made configuration fragment in the format of VS Code's `.vscode/mcp.json`. The same
@@ -242,6 +331,35 @@ grants no scope.
 If the key is invalid or lacks a scope/tier, the call fails with a structured error (`unauthorized` /
 `forbidden`, the latter with `required`/`current` fields). `MCP.Android` returns it since 0.4.0;
 earlier versions report only that the call failed.
+
+## Identifying your client: the `X-ZP-Client` header
+
+Every HTTP call to the PublicApi can carry the `X-ZP-Client` header to identify the calling
+client. The value uses `name/version` format:
+
+```
+X-ZP-Client: mcp-zennoposter/0.5.0
+```
+
+The four official MCP sidecars each set it automatically (once ZP-6170 ships):
+
+| Sidecar | Value |
+|---|---|
+| `MCP.ProjectMaker` | `mcp-projectmaker/<version>` |
+| `MCP.Instance` | `mcp-instance/<version>` |
+| `MCP.ZennoPoster` | `mcp-zennoposter/<version>` |
+| `MCP.Android` | `mcp-android/<version>` |
+
+**For third-party integrators:** choose a stable lower-case identifier that names your product —
+for example `acme-bot/1.0`. Avoid generic names (`client`, `test`, `my-app`) that clash with
+other integrators. The header is free-form; there is no registration step.
+
+Calls that arrive without the header (direct HTTP scripts, curl, custom clients that do not set
+it) are attributed to the built-in client name **`direct-http`**.
+
+The header is used for **aggregated, anonymized analytics only** — see
+[data-collection.md](https://zennolab.github.io/zennoposter-mcp/data-collection.html) for
+exactly what is and is not collected. It has no effect on routing, authorization or rate limiting.
 
 ## Changing ports
 

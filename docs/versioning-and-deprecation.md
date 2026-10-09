@@ -11,7 +11,7 @@ Applies to every operation in the published contract.
 ## Contract version & base path
 
 - Every operation lives under **`/api/v1`**. The major version is part of the path.
-- The contract itself carries a semantic version, currently `1.3.0`. It is reported in
+- The contract itself carries a semantic version, currently `1.4.0`. It is reported in
   `info.version` of the OpenAPI document and in `version` of `GET /capabilities`.
 - The contract version moves by the rules below — per contract change, not per product release. A
   product release that changes nothing in the contract leaves it where it is; see
@@ -65,11 +65,10 @@ outright instead of walking the deprecation cycle — for example the
 without a deprecation window. The 90-day window and the `Deprecation`/`Sunset` headers apply from
 the moment v1 ships to external integrators.
 
-Declared-but-not-implemented operations (currently the confirmations trio,
-`confirmations_list`/`confirmation_approve`/`confirmation_reject`) are a **feature gap**, not a
-deprecation: they surface as `isAvailable: false` in `/capabilities` and answer `501`, not
-`deprecated: true` in the OpenAPI document. The two concepts are distinct and should not be
-confused when reading the manifest.
+Declared-but-not-implemented operations are a **feature gap**, not a deprecation: they surface as
+`isAvailable: false` in `/capabilities` and answer `501`, not `deprecated: true` in the OpenAPI
+document. The two concepts are distinct and should not be confused when reading the manifest. No
+operation is in that state right now — the confirmations trio was the last one and it is wired.
 
 ### Removed pre-contract routes: `/api/neurobot/*`
 

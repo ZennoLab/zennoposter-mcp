@@ -59,7 +59,7 @@ From then on, send it as `Authorization: Bearer <raw-key>` on every request exce
 | `T0` | Read / inspect, no side effects. | ApiKey only. |
 | `T1` | Edits the project/model, reversible, no execution. | ApiKey + scope. |
 | `T2` | Execution with the application's own privileges (run a task, complete a session). | ApiKey + scope + audit. |
-| `T3` | Reaches the OS level — filesystem/network/OwnCode compile+run, or key/audit administration. RCE-class. | ApiKey + scope + audit. |
+| `T3` | Reaches the OS level — filesystem/network/OwnCode compile+run, or key/audit administration. RCE-class. | ApiKey + scope + audit, and a person's approval when the owner turned that on ([security-model.md](security-model.md)). |
 
 Scopes are namespaced by domain: `project:read/edit/run/record`, `task:read/edit/control`,
 `instance:read/control/interact`, `code:read/author`, and the cross-cutting `admin`. The content
@@ -98,6 +98,50 @@ using directives and common code at T0 with `code:read`, while `PUT` on the same
 `code:author` at T3, because that code is compiled into the project and runs with it. The block's
 GAC reference list is separate: `GET /projects/current/gac-references` is T0 `project:read` and the
 `PUT` that replaces it is T1 `project:edit`, since a reference on its own executes nothing.
+
+#### Step debugging (breakpoint → run → pause → step)
+
+The four `debug_*` operations drive the ProjectMaker debugger the way the toolbar buttons do. Step and
+run execute cubes, so they are T3 `project:run` and pass the same per-content gate as
+`project_start`; pause is T2 `project:run`; status is T0 `project:read`, so a read-only key can watch
+a run it cannot drive. Step, run and pause **return before the cube runs** — the outcome is only ever
+read from `debug_status`, so every drive call is followed by a poll:
+
+```bash
+# 1. put a breakpoint on the cube to stop at
+curl -X PATCH -H "Authorization: Bearer <api-key>" -H "Content-Type: application/json" \
+  -d '{"breakpoint":true}' http://localhost:5299/api/v1/projects/current/actions/{groupId}/{actionId}/properties
+
+# 2. start the run, then poll until the state is no longer Running
+curl -X POST -H "Authorization: Bearer <api-key>" -d '{}' http://localhost:5299/api/v1/projects/current/start
+curl -H "Authorization: Bearer <api-key>" http://localhost:5299/api/v1/projects/current/debug/status
+# → {"state":"Paused","actionId":"<the breakpoint cube>","groupId":"...","breakpointHit":true,
+#    "actionFailed":false,"executionError":null}
+
+# 3. look around, then continue one cube ("Next") or up to the next breakpoint ("To breakpoint")
+curl -H "Authorization: Bearer <api-key>" http://localhost:5299/api/v1/projects/current/variables
+curl -X POST -H "Authorization: Bearer <api-key>" -d '{}' http://localhost:5299/api/v1/projects/current/debug/step
+curl -X POST -H "Authorization: Bearer <api-key>" -d '{}' http://localhost:5299/api/v1/projects/current/debug/run
+# poll debug/status again after each: Paused = stopped on the next cube, Idle = the project reached its end
+
+# 4. interrupt a long cube without losing the run
+curl -X POST -H "Authorization: Bearer <api-key>" -d '{}' http://localhost:5299/api/v1/projects/current/debug/pause
+# → status reads Stopping until the cube finishes, then Paused; debug/step or debug/run continue from there
+```
+
+`state` is one of `Idle` (nothing to resume — never started, or the project reached its end), `Running`,
+`Paused` (between cubes: breakpoint, step, pause or a failed cube) and `Stopping` (pause or stop
+requested, the current cube is still finishing). On a failed cube the run stays paused **on** that cube
+with `actionFailed: true` and its message in `executionError`. A second step or run while a cube is
+still executing is refused with `409 failed_precondition`; `debug/pause` and `/projects/current/stop`
+on a paused run are successful no-ops — neither executes a cube. Right after `project_start` there is
+a short window in which the status already reads `Running` but the debugger has not started yet: step,
+run, pause and stop are refused with the same `409 failed_precondition` there — poll `debug/status`
+and retry once it is `Running` or `Paused`. `debug/step` and `debug/run` accept an
+optional `{"fromCursor": true|false}` for the case where the editor cursor was moved away from the cube
+the run paused on: `true` continues from the cursor, `false` from the paused cube, omitted follows the
+user's saved ProjectMaker choice. A ready-made smoke run of this loop is `test/Smoke/publicapi-debug-stepping.ps1`
+in the product repository.
 
 ### ZennoPoster tasks (`task:*`) — host = ZennoPoster Core
 
@@ -169,6 +213,14 @@ deleted. Deduplicate on the client by `(threadId, timestamp)` or `uowId`. Note: 
 snapshot inside a failure point can contain sensitive values and is readable with `task:read` (T0) —
 scope your keys accordingly.
 
+`GET /tasks/{id}/logs` (T1, `task:read`) returns the execution log leading up to a failure: the
+records the project wrote and the actions the engine went through, merged in time order, oldest
+first. Query parameters: `logLevel` is a severity mask (Info=1, Warning=2, Error=4, default 7; 4
+returns the failing steps together with the error records), `skip` and `take` page the result
+(default 100 entries), `uowId` limits it to one attempt. The log is held in memory: the last 8
+attempts of each task, up to 2000 entries per attempt, for 2 hours. An empty result means nothing is
+kept for that task. Entries carry whatever the project logged, including sensitive values.
+
 #### Scheduler settings
 
 `GET`/`PUT /tasks/{id}/settings/scheduler`. Formats: lists are comma-separated; `daysOfWeek` uses
@@ -237,7 +289,13 @@ a task is *waiting* for you to drive it; it is not a precondition.)
 GET  /instances                                     (T0, instance:read)
 POST /instances/{id}/tabs/{tabId}/navigate          (T1, instance:interact)  — { "url": "...", "timeout": 5 }
 POST /instances/{id}/tabs/{tabId}/elements/event    (T1, instance:interact)  — { "xpath": "...", "eventName": "click" }
+GET  /instances/{id}/tabs/{tabId}/screenshot        (T0, instance:read)      — ?fullPage=true&maxWidth=1280
 ```
+
+`.../screenshot` returns a PNG, base64-encoded: the visible viewport by default, or the page from
+the top with `fullPage=true`. The image is fitted into 1280 px on the long side unless `maxWidth` or
+`maxHeight` is given (2000 px at most per side); `scale` and `isTruncated` in the response say
+whether it was shrunk or cut.
 
 **Release ≠ close.** `DELETE /instances/{id}` gracefully releases an API-started browser back to
 the **pool**, and the pool decides release-vs-restart itself — the window may stay alive for
@@ -253,13 +311,19 @@ GET  /auth/whoami      (T0, no scope)  — your key's own scopes/tier
 GET  /capabilities     (T0, no scope)  — the manifest below
 POST /auth/keys        (T3, admin)     — issue a key (same operation the UI calls)
 GET  /audit            (T0, admin)     — the call log
+GET  /plugins/trust    (T0, admin)     — plugin files the owner pinned, by SHA-256
+POST /plugins/trust    (T2, admin)     — pin an installed plugin file: {"path": "Local\\my-plugin.zpg"}
+DELETE /plugins/trust/{sha256} (T2, admin) — withdraw a pin
 ```
 
-**`GET /audit` is the journal of key administration on the host**: the `admin`-scope operations
-(`/auth/keys*` and `/audit` itself), including attempts that were denied. Ordinary domain calls —
-everything under `/projects`, `/tasks`, `/instances` and the rest — are **not** journaled, so the log
-tells you who changed the set of keys, not what a key went on to do. Each record carries the
-timestamp, the key's id/label (never the token itself), the method, path and status code; filter with
+**`GET /audit` is the journal of everything at `T2` and above**, plus the `admin` surface
+(`/auth/keys*` and `/audit` itself), refused attempts included. So it answers both "who changed the
+set of keys" and "who ran this project, executed this action, started this task". Each host keeps
+its own log and answers only for itself, so query both ports for the full picture. `T0`/`T1` reads
+and edits are deliberately left out; see [security-model.md](security-model.md) for why, and for
+what the peer and unit-of-work fields are worth. Each record carries the timestamp, the operation
+id, the host, the key's id/label (never the token itself), the method, path, status code, tier,
+required scope, duration, peer address and the caller's `X-Zenno-Uow-Id` if it sent one; filter with
 `?since=`/`?until=` (ISO-8601), `?keyId=`, `?method=`, `?statusCode=`, page with `?skip=`/`?take=`.
 
 **`GET /auth/keys`** lists every key record with `systemProvisioned` (auto-issued by the host for
@@ -287,8 +351,8 @@ without one — see below):
 ```json
 {
   "host": "zennoposter",
-  "version": "1.3.0",
-  "productVersion": "7.9.2.0",
+  "version": "1.4.0",
+  "productVersion": "7.9.3.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,
   "operations": [

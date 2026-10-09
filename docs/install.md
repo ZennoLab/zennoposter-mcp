@@ -2,7 +2,7 @@
 
 # Install MCP servers
 
-Requires ZennoPoster 7.9.2 or newer, or ZennoDroid 2.6.1 or newer, on Windows. The client connects to
+Requires ZennoPoster 7.9.3 or newer, or ZennoDroid 2.6.1 or newer, on Windows. The client connects to
 a running MCP server: download it, issue an ApiKey and start it as described in the
 [repository README](https://github.com/ZennoLab/zennoposter-mcp#readme).
 

@@ -91,6 +91,11 @@ defaults:
           title: Compatibility
           nav_order: 7
     - scope:
+          path: data-collection.md
+      values:
+          title: Data collection
+          nav_order: 7.5
+    - scope:
           path: ru/index.md
       values:
           title: Русский
@@ -132,3 +137,9 @@ defaults:
           title: Совместимость
           parent: Русский
           nav_order: 5
+    - scope:
+          path: ru/data-collection.md
+      values:
+          title: Сбор данных
+          parent: Русский
+          nav_order: 5.5

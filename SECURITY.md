@@ -5,10 +5,12 @@
 | Component | Supported |
 |---|---|
 | MCP servers | Latest release, see [Releases](https://github.com/ZennoLab/zennoposter-mcp/releases) |
-| ZennoPoster | 7.9.2 and newer |
+| ZennoPoster | 7.9.3 and newer |
 | ZennoDroid | 2.6.1 and newer |
 
-Older product versions have no PublicApi and cannot run these servers.
+Older product versions either have no PublicApi or work only with earlier server releases, which
+receive no fixes; see the
+[compatibility matrix](https://zennolab.github.io/zennoposter-mcp/compatibility.html).
 
 ## Security model
 

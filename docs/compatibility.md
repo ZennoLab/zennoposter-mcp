@@ -11,14 +11,15 @@ serves, and the MCP server binaries you downloaded. This page maps them onto eac
 
 ## Supported combinations
 
-Contract version: **1.3.0**.
+Contract version: **1.4.0**.
 
 An installation serves the newest contract version its build shipped with; `/capabilities` reports
 which one (see below).
 
 | Contract | ZennoPoster | ZennoDroid | What it adds |
 |---|---|---|---|
-| 1.3.0 | 7.9.3.0 and newer | 2.6.1.0 and newer | Good End / Bad End chains in `GET /projects/current/structure` |
+| 1.4.0 | 7.9.3.0 and newer | 2.6.1.0 and newer | Task execution log `GET /tasks/{id}/logs`; tab screenshot `GET /instances/{id}/tabs/{tabId}/screenshot` |
+| 1.3.0 | — | — | Good End / Bad End chains in `GET /projects/current/structure`. Not shipped in a product release; included in 1.4.0 |
 | 1.2.0 | 7.9.2.0 | — | |
 
 Every server release states the minimum product version it works with; a dash means the server does
@@ -30,6 +31,7 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.5.0 | 7.9.3.0 and newer | 2.6.1.0 and newer |
 | 0.4.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.3.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.2.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
@@ -38,6 +40,7 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.5.0 | 7.9.3.0 and newer | 2.6.1.0 and newer |
 | 0.4.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.3.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.2.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
@@ -46,12 +49,14 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.3.0 | 7.9.3.0 and newer | — |
 | 0.2.0 | 7.9.2.0 and newer | — |
 
 ### MCP.Android
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.5.0 | — | 2.6.1.0 and newer |
 | 0.4.0 | — | 2.6.1.0 and newer |
 | 0.2.0 | — | 2.6.1.0 and newer |
 
@@ -78,7 +83,7 @@ curl -H "Authorization: Bearer <api-key>" http://localhost:5299/api/v1/capabilit
   carrying `isAvailable: false`, cannot be called there.
 
 The MCP server version is the one in the release tag and in the archive name, for example
-`mcp-projectmaker-v0.3.0` and `MCP.ProjectMaker-v0.3.0-win-x64.zip`.
+`mcp-projectmaker-v0.5.0` and `MCP.ProjectMaker-v0.5.0-win-x64.zip`.
 
 ## When the numbers disagree
 

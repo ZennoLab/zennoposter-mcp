@@ -10,7 +10,7 @@
     {
       "name": "zennoposter-mcp",
       "source": ".",
-      "description": "ZennoPoster: edit ProjectMaker projects, run and monitor tasks, drive the browser. Requires ZennoPoster 7.9.2+ on Windows."
+      "description": "ZennoPoster: edit ProjectMaker projects, run and monitor tasks, drive the browser. Requires ZennoPoster 7.9.3+ on Windows."
     },
     {
       "name": "zennodroid-mcp",

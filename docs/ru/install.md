@@ -2,7 +2,7 @@
 
 # Установка MCP-серверов
 
-Нужен ZennoPoster 7.9.2 или новее либо ZennoDroid 2.6.1 или новее, Windows. Клиент подключается к запущенному MCP-серверу: скачайте его, выпустите ApiKey и запустите, как описано в [README репозитория](https://github.com/ZennoLab/zennoposter-mcp/blob/main/README.ru.md).
+Нужен ZennoPoster 7.9.3 или новее либо ZennoDroid 2.6.1 или новее, Windows. Клиент подключается к запущенному MCP-серверу: скачайте его, выпустите ApiKey и запустите, как описано в [README репозитория](https://github.com/ZennoLab/zennoposter-mcp/blob/main/README.ru.md).
 
 Команды и кнопки ниже используют порты из таблиц README. Если сервер запущен на другом порту, укажите этот порт в конфигурации клиента.
 
@@ -136,4 +136,4 @@ Claude Code, `.mcp.json` в корне проекта:
 
 Другие MCP-клиенты: добавьте сервер Streamable HTTP с URL из таблиц выше (Cline нужен `"type": "streamableHttp"` в записи). Заголовок авторизации не нужен.
 
-<!-- translated-from: install.md eb1452bb3f2a1256c1f293eaca89e1d976a00b75 -->
+<!-- translated-from: install.md 0843df3dcfc1b1bea0600ec01ca185fe4dba2799 -->

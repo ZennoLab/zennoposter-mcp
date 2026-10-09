@@ -13,8 +13,10 @@ Confirm all three with the user before downloading anything:
 
 1. **Windows x64.** These are self-contained Windows binaries. They do not run on macOS, Linux
    or in a Linux container.
-2. **ZennoPoster 7.9.2+ or ZennoDroid 2.6.1+.** Earlier versions have no PublicApi for the
-   servers to talk to. The version is in the program title bar.
+2. **ZennoPoster 7.9.3+ or ZennoDroid 2.6.1+** for the latest server releases. An older
+   ZennoPoster needs an older server release: pick it from the compatibility matrix,
+   https://zennolab.github.io/zennoposter-mcp/compatibility.html. The version is in the program
+   title bar.
 3. **The application is running.** The server talks to a live ProjectMaker / ZennoPoster /
    ZennoDroid, not to a project file on disk. For project operations the project must be open.
 

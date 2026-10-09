@@ -29,6 +29,8 @@ The table below is the complete set of `error` codes this version returns.
 | `400` | `bad_request` | Malformed request (bad JSON, invalid parameter). | Any operation, request-shape validation. |
 | `401` | `unauthorized` | Missing or invalid `Authorization: Bearer <api-key>` — no key, unknown key, or an expired/disabled one. | Auth gate, every operation except `ping`. |
 | `403` | `forbidden` | Key is valid but lacks the required scope, or the operation's tier exceeds the key's `maxTier`. Body includes `required`/`current`. | Auth gate. |
+| `403` | `confirmation_rejected` | The key was sufficient, and a person refused the call at the human-confirmation gate. Body carries `confirmationId`. Off unless the machine's owner turned it on — see [security-model.md](security-model.md). | Auth gate, after authorization. |
+| `403` | `confirmation_timeout` | Same gate, but nobody answered within the owner's wait. Body carries `confirmationId`. | Auth gate, after authorization. |
 | `404` | `not_found` | Three distinct origins, same code: (a) the path/verb resolves to no known operation; (b) on the ZennoPoster host, the operation was resolved and authorized, but the task, instance, tab or element it addresses doesn't exist — e.g. `GET /tasks/{id}` with an unknown `id`; (c) on the ProjectMaker host, the action, variable, list, table or spreadsheet the call names doesn't exist in the open project, or the file passed to `POST /projects/open` doesn't exist. "No project is open at all" is **not** a `404` — see `project_not_open`. | (a) Auth gate; (b) ZennoPoster/Instance domain handlers; (c) ProjectMaker domain handlers. |
 | `409` | `project_not_open` | Every `/projects/current/*` operation on the ProjectMaker host needs an open project and the editor has none (e.g. right after `POST /projects/current/close` of the last tab in a race, or before any project was opened). Open or create a project first (`POST /projects/open`, `POST /projects`). | ProjectMaker domain handlers. |
 | `409` | `failed_precondition` | The open project is not in a state that allows the call: `POST /projects/current/close` with unsaved changes and no `discardUnsavedChanges: true`, or while the project is running/being debugged; `POST /projects/current/save` when the target file exists and the user declined to overwrite it. | ProjectMaker domain handlers. |
@@ -40,14 +42,14 @@ The table below is the complete set of `error` codes this version returns.
 | `409` | `instance_view_protected` | `POST /instances/{id}/show` — the browser's view is protected (view protection enabled and no open `WaitForUserAction` window), so the window cannot be revealed. | Instance domain. |
 | `409` | `task_scheduler_owned` | `DELETE /tasks/{id}` — the task is owned by a scheduler job and cannot be deleted directly; delete the scheduler job instead. | Tasks domain, ZennoPoster host only. |
 | `413` | `payload_too_large` | Request body exceeds the host's upload limit (default 2 GB — a safety cap, not something normal usage hits). Applies to any operation with a JSON body on the ZennoPoster host. | ZennoPoster host, global request-body guard (not operation-specific business logic). |
-| `429` | `rate_limited` | Too many concurrent `GET /sessions/events` long-polls (per-host cap, default 32); also reserved for remote-mode rate limiting. | Sessions events long-poll; remote/TLS mode (not yet enabled). |
+| `429` | `rate_limited` | Two origins. (a) Too many failed authentications from this credential or this peer address within a few minutes. The answer carries `Retry-After` and arrives before the key is verified. Counters expire on their own and a successful authentication clears them; nothing is locked out. (b) Too many concurrent `GET /sessions/events` long-polls (per-host cap, default 32). | (a) Auth gate; (b) sessions events long-poll. |
 | `500` | `internal_error` | Unhandled server-side failure. | Any operation. |
-| `501` | `not_implemented` | The path/verb is a declared operation that isn't wired to a handler on this host (e.g. the human-confirmation `confirmations_*` trio). | Auth gate. |
+| `501` | `not_implemented` | The path/verb is a declared operation that isn't wired to a handler on this host. No operation is in that state in this version; the code stays in the contract for whatever is declared ahead of its implementation next. | Auth gate. |
 | `503` | `service_unavailable` | The AI/PublicApi runtime master-switch is off — every call is refused before the key is even checked. | Auth gate, checked before key/operation detail. |
 
 ## A note on 409
 
-The **auth gate itself** never returns `409`: it only ever produces `401` / `403` / `404` / `501`.
+The **auth gate itself** never returns `409`: it only ever produces `401` / `403` / `404` / `429` / `501`.
 `409` is a **domain-level** status, returned only by the sessions/instance domain when the call is
 well-authorized but the runtime context it needs (an open interaction window) isn't there. Don't conflate the two: a `403` means "your key can't do this"; a `409` means
 "your key can do this, but not *right now*".
@@ -58,10 +60,13 @@ well-authorized but the runtime context it needs (an open interaction window) is
    is no refresh flow (opaque keys, no token exchange).
 2. **`403`** — read `required` vs `current` in the body and either request a key with the missing
    scope/tier, or don't attempt the call. Don't retry as-is; it will never succeed with the same key.
+   The two `confirmation_*` codes are the exception: the key was fine and a person refused or did not
+   answer, so a bigger key changes nothing and a later attempt may well be allowed.
 3. **`404` / `409`** on the sessions/instance domain — these are expected, not exceptional: a
    `WaitForUserAction` window can close between your `GET /sessions` listing and your
    `POST /sessions/{id}/complete` call. Re-list and confirm the session is still open before retrying.
-4. **`429`** — back off; only relevant once remote mode ships (not in this release).
+4. **`429`** — wait for `Retry-After` seconds, then retry. After a failed authentication, fix the
+   credential first: retrying the same rejected key in a loop is what put you here.
 5. **`501`** — the operation is declared in the contract but not wired on this host
    (`isAvailable: false` in `/capabilities` for that `operationId`); don't call it.
 6. **`503`** — the AI/PublicApi master-switch is off host-side; nothing will succeed until it's
