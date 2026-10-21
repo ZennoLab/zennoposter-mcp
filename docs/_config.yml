@@ -1,6 +1,6 @@
 # Jekyll configuration for the published documentation site (GitHub Pages, ZennoLab/zennoposter-mcp,
 # Settings -> Pages -> Deploy from a branch -> main / docs). It is NOT used anywhere in this repo's
-# build: the publish-publicapi-docs-github CI job mirrors this directory into the published docs/
+# build: the publish-mcp-release CI job mirrors this directory into the published docs/
 # folder, and GitHub Pages builds the site from there.
 title: ZennoLab PublicApi
 description: External developer documentation for the ZennoPoster / ProjectMaker PublicApi and MCP servers

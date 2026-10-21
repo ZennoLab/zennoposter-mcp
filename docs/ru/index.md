@@ -6,7 +6,7 @@
 
 Русский перевод — вспомогательный; при расхождении верной считается [английская версия](../index.md).
 
-Этот сайт описывает ZennoPoster **7.9.3 и новее** и ZennoDroid **2.6.1 и новее**, версию контракта **1.4.0**, MCP-серверы **0.5.0** (MCP.ProjectMaker, MCP.ZennoPoster), **0.4.0** (MCP.Android) и **0.3.0** (MCP.Instance). Какой сервер к какому продукту и как узнать версии у своей установки — в [compatibility.md](compatibility.md).
+Этот сайт описывает ZennoPoster **7.9.3 и новее** и ZennoDroid **2.6.1 и новее**, версию контракта **1.5.0**, MCP-серверы **0.6.0** (MCP.ProjectMaker, MCP.ZennoPoster, MCP.Android) и **0.4.0** (MCP.Instance). Какой сервер к какому продукту и как узнать версии у своей установки — в [compatibility.md](compatibility.md).
 
 - **[developer-guide.md](developer-guide.md)** — начните здесь: быстрый старт, выпуск ключа, скоупы/тиры, примеры запросов по доменам, `/capabilities`.
 - **[versioning-and-deprecation.md](versioning-and-deprecation.md)** — политика semver (что считается breaking change), окно устаревания и контракт заголовков `Deprecation`/`Sunset`.
@@ -22,4 +22,4 @@
 
 Подключение LLM-клиента к MCP-серверам описано отдельно — в [README репозитория](https://github.com/ZennoLab/zennoposter-mcp). Кнопки установки для Cursor и VS Code и команды Claude Code — в **[install.md](install.md)**.
 
-<!-- translated-from: index.md 40230fc0e88fa0275a17ece2da6d365c9ce8f83f -->
+<!-- translated-from: index.md d79bdb5db7c0c5f0db2287ed0f3461142106f550 -->

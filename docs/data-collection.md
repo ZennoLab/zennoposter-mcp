@@ -2,7 +2,7 @@
 
 # Data collection
 
-ZennoPoster collects **anonymized, aggregated product telemetry** for PublicApi usage.
+ZennoPoster collects **aggregated product telemetry** for PublicApi usage.
 This page describes what is and is not collected, when collection began, and how the data
 is handled.
 
@@ -10,41 +10,62 @@ is handled.
 
 ## What is collected
 
-### Aggregated PublicApi call counts
+### Daily PublicApi usage summary
 
-Once per day the product sends a daily summary to `api/statistics/publicapi-usage`:
+On a timer (and once more on a clean shutdown) the product sends a daily summary to
+`api/statistics/publicapi-usage`. The body carries two lists: `usage` and `issued`.
 
-| Field | What it contains |
-|---|---|
-| `client` | The value of the `X-ZP-Client` header, or `direct-http` if absent |
-| `date` | The UTC date of the summary (YYYY-MM-DD) |
-| `callCount` | Total number of successful PublicApi calls attributed to that client |
-
-No per-request data is sent. The summary is an aggregate counter — a single number for the
-day's total, not a list of individual calls.
-
-### Key issuance facts
-
-When an ApiKey is issued, a fact event is sent:
+`usage` holds one row per combination of key, operation, client and edition for a given day:
 
 | Field | What it contains |
 |---|---|
-| `event` | `"key_issued"` |
-| `issuedAtUtc` | Timestamp of issuance |
-| `tier` | The `maxTier` the key was issued with (`T0`–`T3`) |
-| `scopes` | The set of scopes the key carries |
+| `date` | The UTC date the counts belong to (YYYY-MM-DD) |
+| `keyId` | Identifier of the ApiKey — **never the key itself** |
+| `keyKind` | `user` for a key you issued, `internal` for a key the product issues to its own MCP sidecars |
+| `clientType` | The value of the `X-ZP-Client` header, or `direct-http` if absent |
+| `operationId` | The PublicApi operation that was called, e.g. `tasks_list` |
+| `edition` | Product edition (`Pro`, `Lite`, `Standard`, `Demo`, `ProjectMaker`, `ZennoBox`, `ZP8`), or `unknown` |
+| `count` | Number of authorized calls that day for exactly this combination |
 
-The key value itself, the key label, the issuing user's name, and the machine's IP address
-are **never** included.
+This is a **daily aggregate, not a request log**: no timestamps of individual calls, no
+arguments and no results. It is, however, broken down per operation and per key — it is not a
+single total for the day.
+
+`issued` holds one row per key issuance:
+
+| Field | What it contains |
+|---|---|
+| `date` | The date the key was issued |
+| `keyId` | Identifier of the ApiKey — never the key itself |
+| `keyKind` | `user` or `internal` |
+| `edition` | Product edition at the time of issuance |
+
+On the server the account is taken from the `sub` claim of the token the summary is sent with,
+and rows are stored per account.
+
+### OTel counters
+
+Alongside the summary, two counters go to the telemetry collector:
+
+```
+zp7_publicapi_calls_total{operationId, keyKind, clientType, productName, productVersion, os}
+zp7_publicapi_keys_issued_total{keyKind, productName, productVersion, os}
+```
+
+These carry **no key identifier and no account identifier** — only the low-cardinality labels
+listed above. `os` is the OS release only (`Windows 10`, `Windows 11`), without the build number.
 
 ## What is NOT collected
 
 - **Request or response bodies** — no template content, project code, variable values,
   action parameters, DOM data, or any user-supplied content.
-- **Named analytics** — no user identifiers, key labels, IP addresses, or machine names.
-- **Per-call details** — which operation was called, when exactly it was called, or its
-  return value.
+- **The key value and its label** — only the key's identifier is sent.
+- **Per-call detail** — no timestamp of an individual call, no arguments, no return value and
+  no error text; only daily totals per combination.
+- **Denied calls** — the counter runs only on an authorized call, so attempts rejected with
+  401/403 are not counted at all.
 - **Browsing or automation data** — no URLs visited, no form data, no screenshots.
+- **IP addresses and machine names** — not sent by the product.
 
 ## Storage and handling
 
@@ -54,7 +75,13 @@ and stored in accordance with the
 
 Collection is enabled by default for installations that have outbound HTTPS access to the
 service endpoint. The product does **not** block startup or functionality if the endpoint is
-unreachable — delivery failures are logged at debug level and silently dropped.
+unreachable — delivery failures are logged at debug level and the data is kept for the next
+attempt.
+
+The daily counts are also kept on the machine, in the product's data folder
+(`PublicApiUsage.ZennoPoster.json`, `PublicApiUsage.ProjectMaker.json`), so that a restart later
+in the day continues the day's count instead of starting it over. The file holds the same `usage`
+rows that are sent, and nothing else; rows for past days are removed from it once delivered.
 
 ## See also
 

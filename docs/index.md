@@ -7,8 +7,8 @@ scoped, what the errors mean, and how the contract evolves. The API is loopback-
 security model.
 
 This site documents ZennoPoster **7.9.3 and newer** and ZennoDroid **2.6.1 and newer**, contract
-version **1.4.0**, MCP servers **0.5.0** (MCP.ProjectMaker, MCP.ZennoPoster), **0.4.0** (MCP.Android)
-and **0.3.0** (MCP.Instance). Which server goes with which product, and
+version **1.5.0**, MCP servers **0.6.0** (MCP.ProjectMaker, MCP.ZennoPoster, MCP.Android)
+and **0.4.0** (MCP.Instance). Which server goes with which product, and
 how to read the versions off your own installation, are in [compatibility.md](compatibility.md).
 
 - **[developer-guide.md](developer-guide.md)** — start here: quickstart, issuing a key,

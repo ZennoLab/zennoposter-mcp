@@ -11,15 +11,16 @@ serves, and the MCP server binaries you downloaded. This page maps them onto eac
 
 ## Supported combinations
 
-Contract version: **1.4.0**.
+Contract version: **1.5.0**.
 
 An installation serves the newest contract version its build shipped with; `/capabilities` reports
 which one (see below).
 
 | Contract | ZennoPoster | ZennoDroid | What it adds |
 |---|---|---|---|
-| 1.4.0 | 7.9.3.0 and newer | 2.6.1.0 and newer | Task execution log `GET /tasks/{id}/logs`; tab screenshot `GET /instances/{id}/tabs/{tabId}/screenshot` |
-| 1.3.0 | — | — | Good End / Bad End chains in `GET /projects/current/structure`. Not shipped in a product release; included in 1.4.0 |
+| 1.5.0 | 7.9.3.0 and newer | 2.6.2.0 and newer | Network log of a browser tab `GET /instances/{id}/traffic`, `GET /instances/{id}/traffic/{requestId}` |
+| 1.4.0 | — | 2.6.2.0 | Task execution log `GET /tasks/{id}/logs`; tab screenshot `GET /instances/{id}/tabs/{tabId}/screenshot` |
+| 1.3.0 | — | 2.6.1.0 | Good End / Bad End chains in `GET /projects/current/structure` |
 | 1.2.0 | 7.9.2.0 | — | |
 
 Every server release states the minimum product version it works with; a dash means the server does
@@ -31,7 +32,8 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
-| 0.5.0 | 7.9.3.0 and newer | 2.6.1.0 and newer |
+| 0.6.0 | 7.9.3.0 and newer | 2.6.2.0 and newer |
+| 0.5.0 | 7.9.3.0 and newer | 2.6.2.0 and newer |
 | 0.4.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.3.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.2.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
@@ -40,7 +42,8 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
-| 0.5.0 | 7.9.3.0 and newer | 2.6.1.0 and newer |
+| 0.6.0 | 7.9.3.0 and newer | 2.6.2.0 and newer |
+| 0.5.0 | 7.9.3.0 and newer | 2.6.2.0 and newer |
 | 0.4.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.3.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
 | 0.2.0 | 7.9.2.0 and newer | 2.6.1.0 and newer |
@@ -49,6 +52,7 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.4.0 | 7.9.3.0 and newer | — |
 | 0.3.0 | 7.9.3.0 and newer | — |
 | 0.2.0 | 7.9.2.0 and newer | — |
 
@@ -56,6 +60,7 @@ release stay on the
 
 | Version | ZennoPoster | ZennoDroid |
 |---|---|---|
+| 0.6.0 | — | 2.6.1.0 and newer |
 | 0.5.0 | — | 2.6.1.0 and newer |
 | 0.4.0 | — | 2.6.1.0 and newer |
 | 0.2.0 | — | 2.6.1.0 and newer |

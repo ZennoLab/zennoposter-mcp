@@ -154,6 +154,7 @@ PUT  /tasks/{id}/config     (T1, task:edit)     — update a task's user setting
 `POST /tasks` (add a task) is `T3`/`task:edit` — it either references a project file already on
 disk (`application/json` body `{ "path": "C:\\bots\\my.zp" }`) or uploads the project bytes
 (`application/octet-stream`, `?name=my.zp`). Only `.zp`, `.zpproj` and `.vsproj` are accepted.
+The ZennoDroid runner takes its own `.droid` projects in place of `.zp`.
 Treat it as risky regardless of variant: an imported project can itself contain `OwnCode`.
 
 **Which start-shaped calls are gated.** Everything that can launch project code runs the same
@@ -351,7 +352,7 @@ without one — see below):
 ```json
 {
   "host": "zennoposter",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "productVersion": "7.9.3.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,

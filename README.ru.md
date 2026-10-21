@@ -1,4 +1,4 @@
-[English](https://github.com/ZennoLab/zennoposter-mcp/blob/main/README.md) | **Русский**
+﻿[English](https://github.com/ZennoLab/zennoposter-mcp/blob/main/README.md) | **Русский**
 
 # Подключение MCP-серверов ZennoPoster и ZennoDroid к своему LLM-клиенту
 
@@ -337,10 +337,10 @@ Claude Code и других клиентов, а также кнопки уст�
 вызывающий клиент. Значение использует формат `name/version`:
 
 ```
-X-ZP-Client: mcp-zennoposter/0.5.0
+X-ZP-Client: mcp-zennoposter/0.6.0
 ```
 
-Четыре официальных MCP-сайдкара выставляют его автоматически (после выхода ZP-6170):
+Четыре официальных MCP-сайдкара выставляют его автоматически:
 
 | Сайдкар | Значение |
 |---|---|
@@ -357,7 +357,7 @@ X-ZP-Client: mcp-zennoposter/0.5.0
 Вызовы без заголовка (прямые HTTP-скрипты, curl, клиенты, которые его не выставляют)
 атрибутируются встроенному имени клиента **`direct-http`**.
 
-Заголовок используется только для **агрегированной обезличенной аналитики** — что именно
+Заголовок используется только для **агрегированной аналитики** — что именно
 собирается и что нет, см. в
 [data-collection.ru.md](https://zennolab.github.io/zennoposter-mcp/ru/data-collection.html).
 Маршрутизацию, авторизацию и rate limiting он не затрагивает.

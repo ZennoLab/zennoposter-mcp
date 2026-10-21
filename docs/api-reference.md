@@ -254,7 +254,7 @@ _(empty object)_
 
 `debug_pause` · tier **T2** · scope `project:run`
 
-Pause the debug run after the current cube finishes (resumable, unlike project_stop).
+Pause the debug run after the current cube finishes (resumable; project_stop interrupts the cube instead).
 
 **Request body:**
 
@@ -1676,7 +1676,7 @@ Add a task — imports a project whose code (incl. OwnCode) runs on start (RCE c
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `path` | string | no | Absolute path to an existing project file (.zp/.zpproj/.vsproj). |
+| `path` | string | no | Absolute path to an existing project file (.zp/.zpproj/.vsproj; on ZennoDroid .droid instead of .zp). |
 
 **Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `500` internal_error
 
@@ -2415,6 +2415,82 @@ PNG screenshot of the tab: the viewport by default or the top of the whole page 
 | `isTruncated` | boolean | yes | True when the picture does not show the whole page: a viewport capture of a page that scrolls, or a full-page capture cut at the height limit. |
 | `scale` | number | yes | Ratio of the returned image to the capture; 1.0 when nothing was shrunk. Divide the picture's pixel coordinates by it to get page pixels. |
 | `fullPage` | boolean | yes | True when the capture is the whole page (its top part up to the limit), false for the viewport. |
+
+### `GET /instances/{id}/traffic`
+
+`traffic_list` · tier **T0** · scope `instance:read`
+
+Network log of the active tab: one row per request (id, method, url, domain, http status, state, startedAt, contentType) with filters and offset/limit paging; bodies via traffic_request_get. Authorization and cookie values are redacted.
+
+**Path parameters:** `id`.
+
+**Query parameters:**
+
+| Name | Type | Description |
+|---|---|---|
+| `urlContains` | string | Case-insensitive substring the request URL must contain. |
+| `urlRegex` | string | .NET regular expression the request URL must match. A 400 when the pattern is invalid, and also when it is too expensive to evaluate: matching is capped per URL, and a pattern that hits that cap fails the call instead of silently skipping rows. |
+| `method` | string | HTTP method, or a comma-separated list (GET,POST); case-insensitive. |
+| `status` | string | Comma-separated HTTP status codes (200,404) and/or classes (4xx,5xx); 0 = no response yet or no response at all. |
+| `state` | string | pending (no response yet), finished, or blocked (by the instance's content policy). |
+| `failedOnly` | boolean | true = only requests that failed: blocked, or finished with no response (status 0) or status >= 400. Default false. |
+| `domain` | string | Case-insensitive substring the request's host must contain. |
+| `contentType` | string | Case-insensitive substring of the response media type (json, javascript, image). Needs one browser call per candidate, so the scan stops after 300 of them: 'scanned'/'scanLimited' say how far it got and whether 'total' is a lower bound. |
+| `sinceId` | integer | Only requests with id greater than this. Read latestId before an action, then pass it here to see what the action caused. |
+| `order` | string | desc (default) = newest first; asc = oldest first. Ordered by id, which is chronological. |
+| `offset` | integer | Paging offset into the filtered list. Default 0. |
+| `limit` | integer | Page size. Default 20, hard cap 200 (larger values are clamped). Every row carries a full URL, so a large page costs the caller real context. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `tabId` | integer | no | Id of the active tab whose log this is; null when the instance has no tab. |
+| `scope` | string | no | Always "activeTab": the log of the active tab's current page is the only scope the browser offers. |
+| `notice` | string | no | What the caller must know to read this log correctly. |
+| `total` | integer | yes | Rows matching the filters, across all pages. |
+| `offset` | integer | yes |  |
+| `limit` | integer | yes |  |
+| `hasMore` | boolean | yes |  |
+| `scanned` | integer | no | How many entries had their media type resolved; absent unless a contentType filter was used. |
+| `scanLimited` | boolean | no | True when not every candidate was examined, so Total is a lower bound; absent unless a contentType filter was used. |
+| `latestId` | integer | no | Largest request id in the whole log, before filtering; pass it as sinceId to see only what happens next. Null for an empty log. |
+| `items` | array of object | no |  |
+
+### `GET /instances/{id}/traffic/{requestId}`
+
+`traffic_request_get` · tier **T0** · scope `instance:read`
+
+One request of the active tab's network log: parsed request/response headers, cookies and bodies (text decoded, binary as base64 on request) in a startIndex/maxCharacters window. A body is readable only while the page that produced it is loaded - bodyAvailable says so. Authorization and cookie values are redacted.
+
+**Path parameters:** `id`, `requestId`.
+
+**Query parameters:**
+
+| Name | Type | Description |
+|---|---|---|
+| `startIndex` | integer | Character offset into each body's representation (decoded text, or base64 for binary). Default 0. |
+| `maxCharacters` | integer | Window size in characters. Default 10000, hard cap 50000 (larger values are clamped). |
+| `includeBinary` | boolean | true = return a binary body as base64 through the same window; false (default) = omit it (bodyKind=binary, body=null) and report only its size. |
+
+**Responses:** `200` success · `400` bad_request · `401` unauthorized · `403` forbidden · `404` not_found · `500` internal_error
+
+**Success body (200):**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | yes |  |
+| `method` | string | no |  |
+| `url` | string | no |  |
+| `domain` | string | no |  |
+| `status` | integer | yes | HTTP status of the response; 0 while there is none. |
+| `state` | string | no | pending, finished or blocked. |
+| `startedAt` | string | yes | When the request was sent, UTC. |
+| `request` | object | no |  |
+| `response` | object | no |  |
+| `notice` | string | no | What the caller must know to read this log correctly. |
 
 ### `GET /instances/{id}/tabs/{tabId}/elements/attribute`
 

@@ -112,7 +112,7 @@ POST /tasks/{id}/start      (T3, task:control)  — запустить зада�
 PUT  /tasks/{id}/config     (T1, task:edit)     — обновить пользовательские настройки задачи
 ```
 
-`POST /tasks` (добавить задачу) — это T3/`task:edit`: либо ссылается на файл проекта, уже лежащий на диске (`application/json`-тело `{ "path": "C:\\bots\\my.zp" }`), либо загружает байты проекта (`application/octet-stream`, `?name=my.zp`). Принимаются только `.zp`, `.zpproj` и `.vsproj`. В любом варианте считайте это рискованной операцией: импортированный проект сам может содержать OwnCode.
+`POST /tasks` (добавить задачу) — это T3/`task:edit`: либо ссылается на файл проекта, уже лежащий на диске (`application/json`-тело `{ "path": "C:\\bots\\my.zp" }`), либо загружает байты проекта (`application/octet-stream`, `?name=my.zp`). Принимаются только `.zp`, `.zpproj` и `.vsproj`. Runner ZennoDroid вместо `.zp` принимает свои проекты `.droid`. В любом варианте считайте это рискованной операцией: импортированный проект сам может содержать OwnCode.
 
 **Какие «start-образные» вызовы гейтятся.** Всё, что может запустить код проекта, проходит тот же гейт контент-классификации, что и `/start`: добавление/установка ненулевого числа попыток на READY-задаче (`Newbie`/`Complete`/`NotComplete` — семантика ZP7, общая с кнопками «+N» в UI), `PUT /settings/execution` с итоговым ненулевым счётчиком попыток на готовой задаче и `PUT /settings/scheduler` с `isActive: true` (активное расписание — это отложенный запуск). На остановленной/выполняющейся/запланированной задаче те же вызовы — обычные T1-правки.
 
@@ -234,7 +234,7 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 ```json
 {
   "host": "zennoposter",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "productVersion": "7.9.3.0",
   "currentScopes": ["task:read", "task:control"],
   "currentMaxTier": 2,
@@ -256,4 +256,4 @@ curl -H "Authorization: Bearer <api-key>" "http://localhost:5299/api/v1/code-api
 
 `version` — версия контракта, которую обслуживает хост, `productVersion` — сборка продукта за ним, так что один вызов говорит, с чем именно вы общаетесь; пустой `productVersion` означает, что хост его не сообщает. Сопоставление обоих с релизами MCP-серверов — в [compatibility.md](compatibility.md).
 
-<!-- translated-from: developer-guide.md 4506605f0845031c202a68b29e46c50ae53e494b -->
+<!-- translated-from: developer-guide.md 3e3c2d71c2935da1982076a1684b988ce9429e6d -->

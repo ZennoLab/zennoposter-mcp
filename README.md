@@ -1,4 +1,4 @@
-**English** | [Русский](https://github.com/ZennoLab/zennoposter-mcp/blob/main/README.ru.md)
+﻿**English** | [Русский](https://github.com/ZennoLab/zennoposter-mcp/blob/main/README.ru.md)
 
 # Connecting the ZennoPoster and ZennoDroid MCP servers to your own LLM client
 
@@ -338,10 +338,10 @@ Every HTTP call to the PublicApi can carry the `X-ZP-Client` header to identify 
 client. The value uses `name/version` format:
 
 ```
-X-ZP-Client: mcp-zennoposter/0.5.0
+X-ZP-Client: mcp-zennoposter/0.6.0
 ```
 
-The four official MCP sidecars each set it automatically (once ZP-6170 ships):
+The four official MCP sidecars each set it automatically:
 
 | Sidecar | Value |
 |---|---|
@@ -357,7 +357,7 @@ other integrators. The header is free-form; there is no registration step.
 Calls that arrive without the header (direct HTTP scripts, curl, custom clients that do not set
 it) are attributed to the built-in client name **`direct-http`**.
 
-The header is used for **aggregated, anonymized analytics only** — see
+The header is used for **aggregated analytics only** — see
 [data-collection.md](https://zennolab.github.io/zennoposter-mcp/data-collection.html) for
 exactly what is and is not collected. It has no effect on routing, authorization or rate limiting.
 

@@ -195,3 +195,22 @@ way the product does. What changes is the cost. Three lines of documented HTTP c
 longer work; doing the same now means taking the product's internals apart. A guarantee needs project
 code to run in a separate, restricted process, which a later release brings. Until then, treat every
 project and plugin you run as having the product's rights (section 2).
+
+## 8. What the traffic operations expose
+
+`GET /api/v1/instances/{id}/traffic` and `GET /api/v1/instances/{id}/traffic/{requestId}` (scope
+`instance:read`, tier `T0`) return the network log of the instance's active tab: request URLs
+**including their query strings**, request and response headers, and request and response bodies.
+If the key holder is an AI assistant backed by a cloud model, this data **leaves the machine** — it
+is the price of letting the agent find the endpoint behind a page or read an XHR response instead
+of scraping the DOM.
+
+What is redacted, always, with no parameter to turn it off: the values of `Authorization`,
+`Proxy-Authorization`, `Cookie`, `Set-Cookie`, `X-Api-Key` and `X-Auth-Token`. The structure
+stays — the auth scheme, the cookie names, the `Set-Cookie` attributes — so a session can be
+debugged without being replayed. Nothing else is redacted: a token inside a JSON body or a query
+string is returned as is. If you need raw cookies, read them in project code with
+`Tab.GetTraffic()`, which never leaves the process.
+
+Only the current page of the active tab is tracked, and a body can be read only while that page is
+loaded — after a navigation the headers stay but the bodies are gone (`bodyAvailable: false`).

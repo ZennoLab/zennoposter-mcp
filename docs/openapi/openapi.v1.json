@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "ZennoLab PublicApi",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "description": "Versioned, transport-neutral control plane for ProjectMaker and ZennoPoster."
   },
   "servers": [
@@ -757,7 +757,7 @@
     "/api/v1/projects/current/debug/pause": {
       "post": {
         "operationId": "debug_pause",
-        "summary": "Pause the debug run after the current cube finishes (resumable, unlike project_stop)",
+        "summary": "Pause the debug run after the current cube finishes (resumable; project_stop interrupts the cube instead)",
         "tags": [
           "ProjectMaker"
         ],
@@ -8103,7 +8103,7 @@
                 "properties": {
                   "path": {
                     "type": "string",
-                    "description": "Absolute path to an existing project file (.zp/.zpproj/.vsproj)."
+                    "description": "Absolute path to an existing project file (.zp/.zpproj/.vsproj; on ZennoDroid .droid instead of .zp)."
                   }
                 }
               }
@@ -11118,6 +11118,519 @@
                     "isTruncated",
                     "scale",
                     "fullPage"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "404": {
+            "description": "not_found: The referenced resource (task/instance/tab/element/key) does not exist."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/instances/{id}/traffic": {
+      "get": {
+        "operationId": "traffic_list",
+        "summary": "Network log of the active tab: one row per request (id, method, url, domain, http status, state, startedAt, contentType) with filters and offset/limit paging; bodies via traffic_request_get. Authorization and cookie values are redacted",
+        "tags": [
+          "Instance"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "instance:read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "urlContains",
+            "in": "query",
+            "required": false,
+            "description": "Case-insensitive substring the request URL must contain.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "urlRegex",
+            "in": "query",
+            "required": false,
+            "description": ".NET regular expression the request URL must match. A 400 when the pattern is invalid, and also when it is too expensive to evaluate: matching is capped per URL, and a pattern that hits that cap fails the call instead of silently skipping rows.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "required": false,
+            "description": "HTTP method, or a comma-separated list (GET,POST); case-insensitive.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated HTTP status codes (200,404) and/or classes (4xx,5xx); 0 = no response yet or no response at all.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "pending (no response yet), finished, or blocked (by the instance\u0027s content policy).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "failedOnly",
+            "in": "query",
+            "required": false,
+            "description": "true = only requests that failed: blocked, or finished with no response (status 0) or status \u003E= 400. Default false.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "description": "Case-insensitive substring the request\u0027s host must contain.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "contentType",
+            "in": "query",
+            "required": false,
+            "description": "Case-insensitive substring of the response media type (json, javascript, image). Needs one browser call per candidate, so the scan stops after 300 of them: \u0027scanned\u0027/\u0027scanLimited\u0027 say how far it got and whether \u0027total\u0027 is a lower bound.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sinceId",
+            "in": "query",
+            "required": false,
+            "description": "Only requests with id greater than this. Read latestId before an action, then pass it here to see what the action caused.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "desc (default) = newest first; asc = oldest first. Ordered by id, which is chronological.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Paging offset into the filtered list. Default 0.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size. Default 20, hard cap 200 (larger values are clamped). Every row carries a full URL, so a large page costs the caller real context.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tabId": {
+                      "type": "integer",
+                      "description": "Id of the active tab whose log this is; null when the instance has no tab."
+                    },
+                    "scope": {
+                      "type": "string",
+                      "description": "Always \u0022activeTab\u0022: the log of the active tab\u0027s current page is the only scope the browser offers."
+                    },
+                    "notice": {
+                      "type": "string",
+                      "description": "What the caller must know to read this log correctly."
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "Rows matching the filters, across all pages."
+                    },
+                    "offset": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    },
+                    "scanned": {
+                      "type": "integer",
+                      "description": "How many entries had their media type resolved; absent unless a contentType filter was used."
+                    },
+                    "scanLimited": {
+                      "type": "boolean",
+                      "description": "True when not every candidate was examined, so Total is a lower bound; absent unless a contentType filter was used."
+                    },
+                    "latestId": {
+                      "type": "integer",
+                      "description": "Largest request id in the whole log, before filtering; pass it as sinceId to see only what happens next. Null for an empty log."
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "description": "Stable id within the instance; chronological; what traffic_request_get takes."
+                          },
+                          "method": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string"
+                          },
+                          "domain": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "integer",
+                            "description": "HTTP status of the response; 0 while there is none (pending, blocked, or failed before a response)."
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "pending, finished or blocked."
+                          },
+                          "startedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When the request was sent, UTC."
+                          },
+                          "contentType": {
+                            "type": "string",
+                            "description": "Media type of the response (Content-Type without parameters); null while there is no response."
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "status",
+                          "startedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "offset",
+                    "limit",
+                    "hasMore"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Missing or invalid key"
+          },
+          "403": {
+            "description": "Missing scope or tier exceeded"
+          },
+          "404": {
+            "description": "not_found: The referenced resource (task/instance/tab/element/key) does not exist."
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/instances/{id}/traffic/{requestId}": {
+      "get": {
+        "operationId": "traffic_request_get",
+        "summary": "One request of the active tab\u0027s network log: parsed request/response headers, cookies and bodies (text decoded, binary as base64 on request) in a startIndex/maxCharacters window. A body is readable only while the page that produced it is loaded - bodyAvailable says so. Authorization and cookie values are redacted",
+        "tags": [
+          "Instance"
+        ],
+        "x-risk-tier": 0,
+        "x-implemented": true,
+        "x-required-scope": "instance:read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startIndex",
+            "in": "query",
+            "required": false,
+            "description": "Character offset into each body\u0027s representation (decoded text, or base64 for binary). Default 0.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "maxCharacters",
+            "in": "query",
+            "required": false,
+            "description": "Window size in characters. Default 10000, hard cap 50000 (larger values are clamped).",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "includeBinary",
+            "in": "query",
+            "required": false,
+            "description": "true = return a binary body as base64 through the same window; false (default) = omit it (bodyKind=binary, body=null) and report only its size.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    },
+                    "domain": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "description": "HTTP status of the response; 0 while there is none."
+                    },
+                    "state": {
+                      "type": "string",
+                      "description": "pending, finished or blocked."
+                    },
+                    "startedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "When the request was sent, UTC."
+                    },
+                    "request": {
+                      "type": "object",
+                      "properties": {
+                        "query": {
+                          "type": "string",
+                          "description": "Request only: the URL\u0027s query string without the leading \u0027?\u0027."
+                        },
+                        "headers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "The header\u0027s value; for Authorization/Proxy-Authorization/Cookie/Set-Cookie/X-Api-Key/X-Auth-Token the secret part reads \u0022\u003Credacted\u003E\u0022."
+                              }
+                            }
+                          },
+                          "description": "Headers as sent/received; Authorization, Proxy-Authorization, Cookie, Set-Cookie, X-Api-Key and X-Auth-Token values are redacted."
+                        },
+                        "cookies": {
+                          "type": "string",
+                          "description": "The Cookie (request) / Set-Cookie (response) value with every cookie value redacted; null when the browser reported none \u2014 which can also mean the browser lost that information, not that there were no cookies."
+                        },
+                        "contentType": {
+                          "type": "string",
+                          "description": "Response only: media type without parameters."
+                        },
+                        "charset": {
+                          "type": "string",
+                          "description": "Response only: the charset parameter of Content-Type."
+                        },
+                        "body": {
+                          "type": "string",
+                          "description": "The body window: decoded text, or base64 for a binary body when includeBinary=true; null when omitted or absent."
+                        },
+                        "bodyKind": {
+                          "type": "string",
+                          "description": "text, binary or none (no body by nature: HEAD, 1xx/204/304, a GET request)."
+                        },
+                        "bodyBytes": {
+                          "type": "integer",
+                          "description": "Size of the raw body in bytes (for a request body: of its UTF-8 form)."
+                        },
+                        "bodyTotalLength": {
+                          "type": "integer",
+                          "description": "Length in characters of the representation the window walks over (decoded text, or base64)."
+                        },
+                        "bodyNextIndex": {
+                          "type": "integer",
+                          "description": "startIndex for the next window, or null when this window reaches the end."
+                        },
+                        "bodyIsTruncated": {
+                          "type": "boolean"
+                        },
+                        "bodyAvailable": {
+                          "type": "boolean",
+                          "description": "False when a body was due but could not be read \u2014 see BodyUnavailableReason."
+                        },
+                        "bodyUnavailableReason": {
+                          "type": "string",
+                          "description": "pending, blocked, or navigated_away_or_evicted (bodies are readable only while the page that produced them is loaded); null when available."
+                        }
+                      },
+                      "required": [
+                        "bodyBytes",
+                        "bodyTotalLength",
+                        "bodyIsTruncated",
+                        "bodyAvailable"
+                      ]
+                    },
+                    "response": {
+                      "type": "object",
+                      "properties": {
+                        "query": {
+                          "type": "string",
+                          "description": "Request only: the URL\u0027s query string without the leading \u0027?\u0027."
+                        },
+                        "headers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "The header\u0027s value; for Authorization/Proxy-Authorization/Cookie/Set-Cookie/X-Api-Key/X-Auth-Token the secret part reads \u0022\u003Credacted\u003E\u0022."
+                              }
+                            }
+                          },
+                          "description": "Headers as sent/received; Authorization, Proxy-Authorization, Cookie, Set-Cookie, X-Api-Key and X-Auth-Token values are redacted."
+                        },
+                        "cookies": {
+                          "type": "string",
+                          "description": "The Cookie (request) / Set-Cookie (response) value with every cookie value redacted; null when the browser reported none \u2014 which can also mean the browser lost that information, not that there were no cookies."
+                        },
+                        "contentType": {
+                          "type": "string",
+                          "description": "Response only: media type without parameters."
+                        },
+                        "charset": {
+                          "type": "string",
+                          "description": "Response only: the charset parameter of Content-Type."
+                        },
+                        "body": {
+                          "type": "string",
+                          "description": "The body window: decoded text, or base64 for a binary body when includeBinary=true; null when omitted or absent."
+                        },
+                        "bodyKind": {
+                          "type": "string",
+                          "description": "text, binary or none (no body by nature: HEAD, 1xx/204/304, a GET request)."
+                        },
+                        "bodyBytes": {
+                          "type": "integer",
+                          "description": "Size of the raw body in bytes (for a request body: of its UTF-8 form)."
+                        },
+                        "bodyTotalLength": {
+                          "type": "integer",
+                          "description": "Length in characters of the representation the window walks over (decoded text, or base64)."
+                        },
+                        "bodyNextIndex": {
+                          "type": "integer",
+                          "description": "startIndex for the next window, or null when this window reaches the end."
+                        },
+                        "bodyIsTruncated": {
+                          "type": "boolean"
+                        },
+                        "bodyAvailable": {
+                          "type": "boolean",
+                          "description": "False when a body was due but could not be read \u2014 see BodyUnavailableReason."
+                        },
+                        "bodyUnavailableReason": {
+                          "type": "string",
+                          "description": "pending, blocked, or navigated_away_or_evicted (bodies are readable only while the page that produced them is loaded); null when available."
+                        }
+                      },
+                      "required": [
+                        "bodyBytes",
+                        "bodyTotalLength",
+                        "bodyIsTruncated",
+                        "bodyAvailable"
+                      ]
+                    },
+                    "notice": {
+                      "type": "string",
+                      "description": "What the caller must know to read this log correctly."
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "status",
+                    "startedAt"
                   ]
                 }
               }
